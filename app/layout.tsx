@@ -28,7 +28,6 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
-        <div className="ambient-backdrop pointer-events-none fixed inset-0 -z-10" aria-hidden="true" />
         <ThemeProvider>
           <QueryProvider>
             <AmbientScenery />

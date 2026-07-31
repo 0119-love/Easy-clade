@@ -32,7 +32,7 @@ export function EffortControl({ value, onChange }: EffortControlProps) {
         <span>생각 강도</span>
         <span className="font-mono text-foreground">{LABELS[value]}</span>
       </div>
-      <div className="neu-surface flex items-center gap-0.5 rounded-full p-1">
+      <div className="flex items-center gap-0.5 rounded-full border border-input p-1">
         {LEVELS.map((level, i) => {
           const isActive = level === value;
           return (
@@ -45,13 +45,13 @@ export function EffortControl({ value, onChange }: EffortControlProps) {
               title={LABELS[level]}
               className={cn(
                 "relative flex-1 rounded-full py-1 text-center text-[11px] font-mono tabular-nums transition-colors duration-150",
-                isActive ? "text-foreground" : "text-text-secondary hover:text-foreground",
+                isActive ? "text-secondary-foreground" : "text-text-secondary hover:text-foreground",
               )}
             >
               {isActive && (
                 <motion.div
                   layoutId={`effort-active-${layoutId}`}
-                  className="neu-pressed absolute inset-0 rounded-full"
+                  className="absolute inset-0 rounded-full bg-secondary"
                   transition={GLASS_SPRING}
                 />
               )}

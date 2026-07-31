@@ -26,10 +26,10 @@ const STORAGE_KEY = "ambient-scenery-interval-ms";
 const DEFAULT_INTERVAL_MS: number = INTERVAL_OPTIONS[1].ms;
 
 // Full-bleed nature photo backdrop, cycling on a user-picked interval.
-// Sits behind `.ambient-backdrop` (see layout.tsx / globals.css) so the
-// existing glow blobs still drift on top of it, and behind every panel --
-// the sidebar/topbar are already translucent `.glass` surfaces, so they
-// pick up the photo as a frosted blur automatically, no changes needed there.
+// Sits behind every panel -- since the Material redesign, the sidebar/topbar/
+// cards are opaque tonal surfaces (not the old translucent glass), so this
+// now mostly only shows through in the thin gaps between them, same as a
+// wallpaper behind opaque Material widgets rather than a full frosted mood.
 export function AmbientScenery() {
   const { data } = useQuery({
     queryKey: ["backgrounds"],

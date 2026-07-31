@@ -79,7 +79,7 @@ export function OtpInput({ length = 6, value, onChange, disabled, autoFocus }: O
           onPaste={handlePaste}
           onFocus={(e) => e.currentTarget.select()}
           className={cn(
-            "focus-glow size-12 rounded-lg border border-input bg-black/[0.16] text-center text-xl font-semibold text-foreground backdrop-blur-sm outline-none transition-colors duration-150 focus-visible:border-ring disabled:opacity-50",
+            "focus-glow size-12 rounded-lg border border-input bg-muted text-center text-xl font-semibold text-foreground outline-none transition-colors duration-150 focus-visible:border-ring disabled:opacity-50",
             digit && "border-[color-mix(in_oklch,var(--primary),transparent_45%)]",
           )}
         />

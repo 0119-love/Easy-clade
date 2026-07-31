@@ -39,7 +39,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <nav className="relative flex w-56 shrink-0 flex-col overflow-hidden border-r border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-6 backdrop-blur-[var(--glass-blur-lg)]">
+    <nav className="relative flex w-56 shrink-0 flex-col overflow-hidden border-r border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-6">
       <div className="mb-8 px-3 text-[15px] font-semibold tracking-tight text-foreground">
         AI Command Center
       </div>

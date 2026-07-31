@@ -13,10 +13,10 @@ const OPTIONS = [
 ] as const;
 
 /**
- * The neumorphic segmented tab bar (Design/Build/Ship reference) turned into
- * an actual control: a 3-way Light/Dark/System switch. Same sliding-pill
- * mechanism as Sidebar's active-nav indicator (framer-motion layoutId), just
- * horizontal and wearing the neu-* emboss instead of a glass tint.
+ * M3 "Segmented button" -- an outlined group where the selected segment
+ * gets a tonal (secondaryContainer) fill instead of the old neumorphic
+ * emboss. Same sliding-pill mechanism as Sidebar's active-nav indicator
+ * (framer-motion layoutId), just wearing Material colors now.
  */
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -29,7 +29,7 @@ export function ThemeToggle() {
   const active = theme ?? "system";
 
   return (
-    <div className="neu-surface inline-flex items-center gap-0.5 rounded-full p-1">
+    <div className="inline-flex items-center gap-0.5 rounded-full border border-input p-1">
       {OPTIONS.map((option) => {
         const isActive = active === option.value;
         const Icon = option.icon;
@@ -41,13 +41,13 @@ export function ThemeToggle() {
             aria-pressed={isActive}
             className={cn(
               "relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors duration-150",
-              isActive ? "text-foreground" : "text-text-secondary hover:text-foreground",
+              isActive ? "text-secondary-foreground" : "text-text-secondary hover:text-foreground",
             )}
           >
             {isActive && (
               <motion.div
                 layoutId="theme-toggle-active"
-                className="neu-pressed absolute inset-0 rounded-full"
+                className="absolute inset-0 rounded-full bg-secondary"
                 transition={GLASS_SPRING}
               />
             )}

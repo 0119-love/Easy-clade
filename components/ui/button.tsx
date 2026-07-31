@@ -4,22 +4,34 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-full border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap outline-none select-none transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:scale-[1.02] active:scale-[0.97] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-full border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap outline-none select-none transition-[background-color,color,border-color,box-shadow] duration-150 ease-out focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        // Primary CTA -- a *tinted* glass fill (translucent aqua + blur),
-        // not a fully opaque solid, so it still reads as glass while
-        // staying the one high-contrast hero action on the page.
-        default:
-          "bg-[color-mix(in_oklch,var(--primary),transparent_20%)] text-primary-foreground shadow-[inset_0_1px_0_0_rgba(255,255,255,0.35)] backdrop-blur-md hover:bg-[color-mix(in_oklch,var(--primary),transparent_8%)]",
-        outline: "glass-chip hover:text-foreground aria-expanded:text-foreground",
-        secondary:
-          "glass-chip text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--glass-bg),white_6%)] aria-expanded:text-secondary-foreground",
-        ghost:
-          "hover:bg-[var(--glass-bg)] hover:text-foreground hover:backdrop-blur-sm aria-expanded:bg-[var(--glass-bg)] aria-expanded:text-foreground aria-expanded:backdrop-blur-sm",
+        // M3 "Filled button" -- solid primary fill, the one high-contrast
+        // hero action on a given screen. Flat (elevation 0); Material only
+        // adds shadow to buttons in the rarer "elevated" variant, which this
+        // app doesn't otherwise use.
+        default: "bg-primary text-primary-foreground hover:shadow-[var(--elevation-1)]",
+        // M3 "Outlined button" -- transparent fill, 1px outline, for
+        // secondary actions that need a visible boundary without the visual
+        // weight of a filled button.
+        outline:
+          "border-input bg-transparent text-foreground hover:bg-accent aria-expanded:bg-accent",
+        // M3 "Filled tonal button" -- secondaryContainer fill, a step down
+        // from the primary filled button but still a solid tonal surface.
+        secondary: "bg-secondary text-secondary-foreground hover:shadow-[var(--elevation-1)]",
+        // M3 "Text button" -- lowest emphasis, no fill until hovered, then
+        // just the neutral state-layer tint (`--accent`), never tinted by
+        // the button's own color the way a real Material state layer would
+        // be, which keeps every ghost button visually consistent.
+        ghost: "hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground",
+        // Tonal destructive -- errorContainer-equivalent fill (kept as a
+        // translucent errorTint rather than adding a dedicated errorContainer
+        // token) so a delete action reads as "serious" without being a solid
+        // red button on every list row.
         destructive:
-          "bg-destructive/10 text-destructive backdrop-blur-sm hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
+          "bg-destructive/12 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

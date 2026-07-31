@@ -123,7 +123,7 @@ export function TopBar({ userEmail }: { userEmail: string }) {
           <DropdownMenuTrigger
             render={
               <button type="button" className="outline-none">
-                <span className="flex size-7 items-center justify-center rounded-full border border-[var(--glass-border)] bg-white/[0.08] text-xs font-medium text-foreground backdrop-blur-sm">
+                <span className="flex size-7 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
                   {userEmail.slice(0, 1).toUpperCase()}
                 </span>
               </button>
