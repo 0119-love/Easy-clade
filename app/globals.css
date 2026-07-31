@@ -1,0 +1,369 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Light/Dark/System is now a real, user-controlled choice (see
+   components/providers/ThemeProvider.tsx + components/dashboard/ThemeToggle.tsx)
+   -- next-themes toggles .light/.dark on <html>, and every token below
+   resolves off of whichever is active. */
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-heading: var(--font-inter);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  /* Brand tokens, referenced directly (not through the shadcn bridge above) */
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-panel: var(--panel);
+  --color-surface: var(--surface);
+  --color-text-primary: var(--foreground);
+  --color-text-secondary: var(--muted-foreground);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/*
+ * Tokens that don't change between themes -- brand-adjacent provider hues
+ * and the base corner radius. Split out so the .dark/.light blocks below
+ * only carry values that actually differ.
+ */
+:root {
+  --radius: 1rem;
+
+  /* Provider identity (ProviderMark) -- brand-adjacent hues, not brand-exact
+     hex values, chosen to sit next to Cyber Teal without visually competing
+     with it or with each other. Same in both themes -- these are identity
+     marks, not surface colors. */
+  --provider-anthropic: #e08d6d;
+  --provider-openai: #9b8cf2;
+  --provider-google: #6fa8f5;
+  --provider-xai: #b0b0b0;
+  --provider-perplexity: #7fd4c9;
+  --provider-deepseek: #7b9cf0;
+}
+
+/*
+ * "Operating system of artificial intelligence" palette -- almost-pure-black
+ * background, hairline (not colored) borders, and accent reserved for a
+ * handful of load-bearing moments (primary CTA, success state, focus ring).
+ */
+.dark {
+  --background: #080b0c;
+  --panel: #12191a; /* surface used for the sidebar / right rail */
+  --surface: #12191a;
+  --card: #0f1415;
+  --card-foreground: #f8fafa;
+  --popover: #0f1415;
+  --popover-foreground: #f8fafa;
+  --foreground: #f8fafa;
+
+  /* Monochrome chrome -- color is reserved ONLY for real status semantics
+     (success/warning/danger): everything else (buttons, focus rings,
+     active-nav indicator, control fills) is neutral white/gray glass,
+     never brand-tinted. */
+  --success: #8fffe0;
+  --warning: #ffd166;
+  --danger: #ff6b6b;
+
+  --primary: var(--foreground);
+  --primary-foreground: var(--background);
+  --secondary: rgba(255, 255, 255, 0.06);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--panel);
+  --muted-foreground: #8a9592;
+  --accent: rgba(255, 255, 255, 0.04); /* neutral hover fill -- not tinted */
+  --accent-foreground: var(--foreground);
+  --destructive: var(--danger);
+  --border: rgba(255, 255, 255, 0.05); /* hairline, per spec */
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: rgba(255, 255, 255, 0.5);
+
+  /* Chart categorical slots -- adequate for the v1 sparkline/metric charts.
+     Re-validate with the dataviz skill's palette validator before building
+     the real Analytics page (deferred past v1). */
+  --chart-1: #8fffe0;
+  --chart-2: #ffd166;
+  --chart-3: #7ba7ff;
+  --chart-4: #ff6b6b;
+  --chart-5: #b389f0;
+
+  /* Liquid Glass surface tokens -- translucent light-on-dark overlays, not
+     translucent black, since glass needs to LIFT/lighten whatever backdrop
+     it sits over (the ambient blobs, or other content scrolling beneath). */
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-bg-strong: rgba(18, 22, 23, 0.45); /* popovers need more legibility than cards */
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-highlight: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 40%);
+  --glass-blur-sm: 12px;
+  --glass-blur-lg: 28px;
+
+  --sidebar: #080b0c;
+  --sidebar-foreground: #f8fafa;
+  --sidebar-primary: var(--foreground);
+  --sidebar-primary-foreground: var(--background);
+  --sidebar-accent: rgba(255, 255, 255, 0.04);
+  --sidebar-accent-foreground: #f8fafa;
+  --sidebar-border: rgba(255, 255, 255, 0.05);
+  --sidebar-ring: rgba(255, 255, 255, 0.5);
+
+  /* Neumorphic control shadows (Switch/Slider/ThemeToggle) -- a soft,
+     pressable emboss on dark surfaces: a faint light-from-above edge plus a
+     darker recess, instead of glass's blur+translucency. See .neu-* utilities. */
+  --neu-shadow-raised: -4px -4px 8px rgba(255, 255, 255, 0.04), 4px 4px 10px rgba(0, 0, 0, 0.55);
+  --neu-shadow-pressed: inset -3px -3px 6px rgba(255, 255, 255, 0.03), inset 3px 3px 7px rgba(0, 0, 0, 0.6);
+  --neu-surface: #12191a;
+}
+
+/*
+ * Light theme -- same structure and same "color only means status" rule as
+ * dark, just re-tuned for a light background: overlays that were
+ * white-tinted (to lift off near-black) become black-tinted (to sit into
+ * near-white) instead of literally reusing the same rgba values.
+ */
+:root,
+.light {
+  --background: #e9e9ec;
+  --panel: #eef0f2;
+  --surface: #eef0f2;
+  --card: #eef0f1;
+  --card-foreground: #1c1e20;
+  --popover: #f2f2f4;
+  --popover-foreground: #1c1e20;
+  --foreground: #1c1e20;
+
+  --success: #0f9b8e;
+  --warning: #d97706;
+  --danger: #dc2626;
+
+  --primary: var(--foreground);
+  --primary-foreground: var(--background);
+  --secondary: rgba(0, 0, 0, 0.045);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--panel);
+  --muted-foreground: #6b7280;
+  --accent: rgba(0, 0, 0, 0.035);
+  --accent-foreground: var(--foreground);
+  --destructive: var(--danger);
+  --border: rgba(0, 0, 0, 0.08);
+  --input: rgba(0, 0, 0, 0.12);
+  --ring: rgba(15, 23, 24, 0.35);
+
+  --chart-1: #0f9b8e;
+  --chart-2: #d97706;
+  --chart-3: #3b6fd9;
+  --chart-4: #dc2626;
+  --chart-5: #8b5cf6;
+
+  /* Still translucent glass, not literal neumorphism, at the app-wide Card
+     level -- see the neu-* tokens below for where the neumorphic treatment
+     actually applies (Switch/Slider/ThemeToggle only, per design direction). */
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-strong: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-highlight: linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0) 40%);
+  --glass-blur-sm: 12px;
+  --glass-blur-lg: 28px;
+
+  --sidebar: #e9e9ec;
+  --sidebar-foreground: #1c1e20;
+  --sidebar-primary: var(--foreground);
+  --sidebar-primary-foreground: var(--background);
+  --sidebar-accent: rgba(0, 0, 0, 0.035);
+  --sidebar-accent-foreground: #1c1e20;
+  --sidebar-border: rgba(0, 0, 0, 0.08);
+  --sidebar-ring: rgba(15, 23, 24, 0.35);
+
+  /* Neumorphic control shadows -- light source from the top-left, same
+     convention as dark, just against a light surface: a light highlight and
+     a soft gray recess instead of near-black. */
+  --neu-shadow-raised: -4px -4px 8px rgba(255, 255, 255, 0.7), 4px 4px 10px rgba(0, 0, 0, 0.15);
+  --neu-shadow-pressed: inset -3px -3px 6px rgba(255, 255, 255, 0.6), inset 3px 3px 7px rgba(0, 0, 0, 0.18);
+  --neu-surface: #e9e9ec;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+
+  /* No visible scrollbar chrome anywhere -- scrolling still works via
+     wheel/trackpad/keyboard, just without the OS scrollbar track/arrows
+     clashing with the glass surfaces. */
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Soft focus glow for the hero prompt editor -- the one deliberate "glow"
+   moment in the interface, scoped to a single element and only while
+   focused (see AGENTS design brief: no ambient glow anywhere else). */
+@layer utilities {
+  .focus-glow:focus-within {
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2), 0 0 24px -8px rgba(255, 255, 255, 0.3);
+  }
+
+  /* Neumorphic soft-UI treatment -- deliberately scoped to a few tactile
+     controls (Switch, Slider, ThemeToggle), not the whole app, which stays
+     Liquid Glass. .neu-surface is the resting/track state (soft outward
+     emboss); .neu-pressed is the active/selected/thumb state (soft inward
+     recess) -- swap between them rather than animating the shadow itself,
+     since shadow transitions look muddy mid-flight. */
+  .neu-surface {
+    background: var(--neu-surface);
+    box-shadow: var(--neu-shadow-raised);
+  }
+  .neu-pressed {
+    background: var(--neu-surface);
+    box-shadow: var(--neu-shadow-pressed);
+  }
+
+  /* Scrollbars are hidden globally in this app, so a horizontally-scrolling
+     row (4+ providers selected -- see app/page.tsx) has no native hint that
+     there's more off to the side. Fades both edges instead of tracking
+     scroll position in JS just to know which edge to fade. */
+  .scroll-fade-x {
+    mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent);
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+  .skeleton {
+    background-image: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.09) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+
+  /* Liquid Glass surfaces -- solid fallback first (older browsers, or
+     backdrop-filter disabled), translucent + blurred under @supports.
+     The inset shadows do double duty: a crisp 1px top edge line plus a
+     softer glow fading down from it approximate the specular sheen real
+     glass shows under light, without a separate pseudo-element per surface. */
+  .glass {
+    background: var(--card);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
+      inset 0 40px 60px -40px rgba(255, 255, 255, 0.08),
+      0 8px 30px -12px rgba(0, 0, 0, 0.5);
+  }
+  .glass-chip {
+    background: var(--secondary);
+    border: 1px solid var(--glass-border);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  }
+  .glass-popover {
+    background: var(--card);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
+      0 12px 40px -12px rgba(0, 0, 0, 0.6);
+  }
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur-lg)) saturate(1);
+      -webkit-backdrop-filter: blur(var(--glass-blur-lg)) saturate(1);
+    }
+    .glass-chip {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur-sm)) saturate(1);
+      -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(1);
+    }
+    .glass-popover {
+      background: var(--glass-bg-strong);
+      backdrop-filter: blur(var(--glass-blur-lg)) saturate(1);
+      -webkit-backdrop-filter: blur(var(--glass-blur-lg)) saturate(1);
+    }
+  }
+
+  /* Ambient backdrop -- soft NEUTRAL glow behind the whole app so glass
+     surfaces have depth to diffuse, with zero color tint (grayscale only,
+     matching the reference exactly -- color is reserved for status only).
+     Slowly drifts; fully static when the user asked for less motion. */
+  .ambient-backdrop {
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(255, 255, 255, 0.1), transparent 55%),
+      radial-gradient(ellipse at 85% 15%, rgba(255, 255, 255, 0.07), transparent 55%),
+      radial-gradient(ellipse at 80% 85%, rgba(255, 255, 255, 0.08), transparent 55%),
+      radial-gradient(ellipse at 15% 85%, rgba(255, 255, 255, 0.06), transparent 55%);
+    background-size: 140% 140%;
+    background-repeat: no-repeat;
+    filter: blur(70px);
+    animation: ambient-drift 50s ease-in-out infinite alternate;
+  }
+  @keyframes ambient-drift {
+    0% {
+      background-position:
+        0% 0%,
+        100% 0%,
+        100% 100%,
+        0% 100%;
+    }
+    100% {
+      background-position:
+        8% 6%,
+        92% 8%,
+        92% 92%,
+        6% 94%;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ambient-backdrop {
+      animation: none;
+    }
+  }
+}

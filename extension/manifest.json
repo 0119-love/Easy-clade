@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "AI Command Center Connect",
+  "version": "0.1.0",
+  "description": "Claude 계정으로 로그인해 AI Command Center에 API 접근을 자동으로 연결합니다.",
+  "permissions": ["identity"],
+  "host_permissions": ["http://localhost:4318/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "AI Command Center Connect"
+  }
+}
