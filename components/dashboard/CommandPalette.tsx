@@ -13,6 +13,7 @@ import {
   KeyRound,
   LayoutDashboard,
   ListTodo,
+  Play,
   Plug,
   Settings,
   Sparkles,
@@ -38,6 +39,7 @@ interface NavCommand {
 
 const NAV_COMMANDS: NavCommand[] = [
   { href: "/app", label: "대시보드", icon: LayoutDashboard },
+  { href: "/app/run", label: "실행 화면", icon: Play },
   { href: "/models", label: "AI 모델", icon: Bot },
   { href: "/workflows", label: "워크플로우", icon: Workflow },
   { href: "/agents", label: "에이전트", icon: Sparkles },

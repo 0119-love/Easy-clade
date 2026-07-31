@@ -52,7 +52,7 @@ function PreferencesForm({ initial, onSaved }: { initial: Preferences; onSaved: 
   return (
     <Card className="space-y-4 p-6">
       <div className="space-y-1.5">
-        <Label className="text-xs text-text-secondary">대시보드에 표시할 AI</Label>
+        <Label className="text-xs text-text-secondary">실행 화면에 표시할 AI</Label>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {PROVIDER_IDS.map((id) => (
             <label

@@ -138,8 +138,8 @@ export default function AgentsPage() {
 
   function handleRun(preset: AgentPresetRow) {
     applyPreset(preset);
-    toast.success(`"${preset.name}"을(를) 대시보드에 불러왔습니다. 이제 프롬프트만 입력하고 실행하세요.`);
-    router.push("/app");
+    toast.success(`"${preset.name}"을(를) 실행 화면에 불러왔습니다. 이제 프롬프트만 입력하고 실행하세요.`);
+    router.push("/app/run");
   }
 
   const presets = data?.presets ?? [];
@@ -171,7 +171,7 @@ export default function AgentsPage() {
           <div className="space-y-1">
             <div className="text-sm font-medium text-foreground">2. 실행 클릭</div>
             <p className="text-xs text-text-secondary">
-              목록에서 &ldquo;실행&rdquo;을 누르면 대시보드로 이동하며 설정이 자동으로 채워집니다.
+              목록에서 &ldquo;실행&rdquo;을 누르면 실행 화면으로 이동하며 설정이 자동으로 채워집니다.
             </p>
           </div>
           <div className="space-y-1">

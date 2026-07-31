@@ -66,7 +66,7 @@ export default function ProjectsPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">프로젝트</h1>
         <p className="text-sm text-text-secondary">
-          실행을 프로젝트별로 묶어 기록합니다. 대시보드 상단에서 현재 프로젝트를 선택하면 이후 실행이 자동으로
+          실행을 프로젝트별로 묶어 기록합니다. 상단 메뉴에서 현재 프로젝트를 선택하면 이후 실행이 자동으로
           태그됩니다.
         </p>
       </div>

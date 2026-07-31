@@ -56,7 +56,7 @@ export default function KnowledgePage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">지식</h1>
         <p className="text-sm text-text-secondary">
-          저장한 자료는 대시보드의 고급 옵션에서 시스템 프롬프트에 첨부해 특정 실행에만 참조시킬 수 있습니다. 제목·내용
+          저장한 자료는 실행 화면의 고급 옵션에서 시스템 프롬프트에 첨부해 특정 실행에만 참조시킬 수 있습니다. 제목·내용
           단순 검색만 지원합니다 (의미 기반 검색 아님).
         </p>
       </div>

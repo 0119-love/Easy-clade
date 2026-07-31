@@ -30,7 +30,7 @@ export function ProviderOnboardingModal({ open, onComplete }: ProviderOnboarding
         <DialogHeader>
           <DialogTitle>어떤 AI를 사용하시나요?</DialogTitle>
           <DialogDescription>
-            선택한 AI만 대시보드에 표시됩니다. 나중에 환경설정에서 언제든 바꿀 수 있어요.
+            선택한 AI만 실행 화면에 표시됩니다. 나중에 환경설정에서 언제든 바꿀 수 있어요.
           </DialogDescription>
         </DialogHeader>
 

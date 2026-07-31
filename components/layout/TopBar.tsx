@@ -3,9 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { LogOut, Search } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { PROVIDER_IDS, PROVIDER_LABELS, type KeysStatusResponse } from "@/lib/config/types";
+import { cn, emailInitials } from "@/lib/utils";
+import { PROVIDER_IDS, PROVIDER_LABELS } from "@/lib/config/types";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
+import { useSystemStatus } from "@/lib/hooks/useSystemStatus";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,27 +18,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { fetchProjects } from "@/lib/projects/client";
-
-async function fetchKeysStatus(): Promise<KeysStatusResponse> {
-  const res = await fetch("/api/settings/keys");
-  if (!res.ok) throw new Error("키 상태를 불러오지 못했습니다.");
-  return res.json();
-}
-
-function useSystemStatus() {
-  const { data, isPending } = useQuery({ queryKey: ["settings", "keys"], queryFn: fetchKeysStatus });
-  const providers = data ? Object.values(data.providers) : [];
-  const configuredCount = providers.filter((p) => p.configured).length;
-  const anyRecentFailure = providers.some((p) => p.configured && p.lastCallStatus === "error");
-
-  if (configuredCount === 0) {
-    return { label: "등록된 프로바이더 없음", dotClass: "bg-muted-foreground", data, isPending };
-  }
-  if (anyRecentFailure) {
-    return { label: "일부 오류", dotClass: "bg-warning", data, isPending };
-  }
-  return { label: "정상 작동 중", dotClass: "bg-success", data, isPending };
-}
 
 // Trimmed to exactly four controls per the design brief: Search, Workspace,
 // Connection Status, Profile. No notifications bell, no plan badge.
@@ -124,7 +104,7 @@ export function TopBar({ userEmail }: { userEmail: string }) {
             render={
               <button type="button" className="outline-none">
                 <span className="flex size-7 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-                  {userEmail.slice(0, 1).toUpperCase()}
+                  {emailInitials(userEmail)}
                 </span>
               </button>
             }

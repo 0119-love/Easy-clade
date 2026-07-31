@@ -189,6 +189,42 @@ export async function getTodayStats(userId: number, sinceIso: string): Promise<T
   return { tokens: Number(row!.tokens), costUsd: Number(row!.cost_usd) };
 }
 
+/** Local (not UTC) midnight for "today" as this user's browser would understand it -- Node has no built-in "start of local day" helper. */
+export function localMidnightIso(): string {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+}
+
+export interface TodayStatsByProvider {
+  provider: ProviderId;
+  tokens: number;
+  runCount: number;
+}
+
+/** Same shape as getTodayStats, split per-provider -- drives the dashboard's 6 provider cards and (summed) its system-status tile. */
+export async function getTodayStatsByProvider(userId: number, sinceIso: string): Promise<TodayStatsByProvider[]> {
+  const rows = await queryAll<{ provider: ProviderId; tokens: number; run_count: number }>(
+    `SELECT provider, COALESCE(SUM(input_tokens + output_tokens), 0) AS tokens, COUNT(*) AS run_count
+     FROM runs WHERE user_id = ? AND started_at >= ? GROUP BY provider`,
+    [userId, sinceIso],
+  );
+  return rows.map((r) => ({ provider: r.provider, tokens: Number(r.tokens), runCount: Number(r.run_count) }));
+}
+
+/** Same query bounded to [sinceIso, untilIso) -- used to pull yesterday's numbers for a day-over-day TrendBadge. */
+export async function getStatsByProviderInRange(
+  userId: number,
+  sinceIso: string,
+  untilIso: string,
+): Promise<TodayStatsByProvider[]> {
+  const rows = await queryAll<{ provider: ProviderId; tokens: number; run_count: number }>(
+    `SELECT provider, COALESCE(SUM(input_tokens + output_tokens), 0) AS tokens, COUNT(*) AS run_count
+     FROM runs WHERE user_id = ? AND started_at >= ? AND started_at < ? GROUP BY provider`,
+    [userId, sinceIso, untilIso],
+  );
+  return rows.map((r) => ({ provider: r.provider, tokens: Number(r.tokens), runCount: Number(r.run_count) }));
+}
+
 export interface DailyStat {
   date: string;
   tokens: number;
@@ -423,4 +459,58 @@ export async function getCostKillerLeaderboard(userId: number, minSampleSize = 3
     winRate: Number(r.times_won) / Number(r.times_competed),
     avgCostUsd: Number(r.avg_cost_usd),
   }));
+}
+
+export type DashboardRange = "24h" | "7d" | "30d";
+
+export interface ProviderTrendPoint {
+  bucket: string;
+  provider: ProviderId;
+  tokens: number;
+}
+
+const RANGE_CONFIG: Record<DashboardRange, { hourly: boolean; lookbackMs: number }> = {
+  "24h": { hourly: true, lookbackMs: 24 * 60 * 60_000 },
+  "7d": { hourly: false, lookbackMs: 7 * 86_400_000 },
+  "30d": { hourly: false, lookbackMs: 30 * 86_400_000 },
+};
+
+/**
+ * Bucketed by BOTH time and provider (getDailyStats/getWeeklyStats only group
+ * by time) -- needed to drive the dashboard's multi-line "tokens over time,
+ * one line per provider" chart. A provider with zero runs in some bucket
+ * simply has no row for it (not a zero row) -- callers must fill gaps
+ * themselves before charting.
+ */
+export async function getUsageTrendByProvider(userId: number, range: DashboardRange): Promise<ProviderTrendPoint[]> {
+  const { hourly, lookbackMs } = RANGE_CONFIG[range];
+  const sinceIso = new Date(Date.now() - lookbackMs).toISOString();
+  // hourly is a fixed boolean from RANGE_CONFIG (never request input), so this
+  // interpolation only ever picks between two hardcoded literals -- not
+  // string-built from anything a caller passes in.
+  const bucketExpr = hourly
+    ? `to_char(started_at::timestamptz, 'YYYY-MM-DD HH24:00')`
+    : `to_char(started_at::timestamptz, 'YYYY-MM-DD')`;
+  const rows = await queryAll<{ bucket: string; provider: ProviderId; tokens: number }>(
+    `SELECT ${bucketExpr} AS bucket, provider, COALESCE(SUM(input_tokens + output_tokens), 0) AS tokens
+     FROM runs WHERE user_id = ? AND started_at >= ?
+     GROUP BY ${bucketExpr}, provider ORDER BY bucket ASC`,
+    [userId, sinceIso],
+  );
+  return rows.map((r) => ({ bucket: r.bucket, provider: r.provider, tokens: Number(r.tokens) }));
+}
+
+export interface RecentActivityRow extends RunRow {
+  projectName: string | null;
+}
+
+/** Recent runs with the project name already joined in -- backs the dashboard's "최근 활동" feed. */
+export async function getRecentRunsWithProject(userId: number, limit = 8): Promise<RecentActivityRow[]> {
+  const rows = await queryAll<Record<string, unknown>>(
+    `SELECT r.*, p.name AS project_name FROM runs r
+     LEFT JOIN projects p ON p.id = r.project_id
+     WHERE r.user_id = ? ORDER BY r.started_at DESC LIMIT ?`,
+    [userId, limit],
+  );
+  return rows.map((r) => ({ ...rowToRunRow(r), projectName: (r.project_name as string | null) ?? null }));
 }

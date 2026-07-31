@@ -1,5 +1,7 @@
-import type { DailyStat, ModelBreakdown, ProviderBreakdown, UsageGranularity } from "@/lib/history/queries";
+import type { DailyStat, DashboardRange, ModelBreakdown, ProviderBreakdown, UsageGranularity } from "@/lib/history/queries";
 import type { ProviderTrend } from "@/app/api/analytics/route";
+import type { DashboardActivityItem, DashboardProviderStat, DashboardTotals } from "@/app/api/analytics/dashboard/route";
+import type { DashboardTrendPoint } from "@/app/api/analytics/dashboard/trend/route";
 
 export interface AnalyticsResponse {
   daily: DailyStat[];
@@ -22,5 +24,29 @@ export interface UsageBucketsResponse {
 export async function fetchUsageBuckets(granularity: UsageGranularity): Promise<UsageBucketsResponse> {
   const res = await fetch(`/api/analytics/usage?granularity=${granularity}`);
   if (!res.ok) throw new Error("사용량 데이터를 불러오지 못했습니다.");
+  return res.json();
+}
+
+export interface DashboardResponse {
+  byProvider: DashboardProviderStat[];
+  totals: DashboardTotals;
+  activeAgentCount: number;
+  recentActivity: DashboardActivityItem[];
+}
+
+export async function fetchDashboardToday(): Promise<DashboardResponse> {
+  const res = await fetch("/api/analytics/dashboard");
+  if (!res.ok) throw new Error("대시보드 데이터를 불러오지 못했습니다.");
+  return res.json();
+}
+
+export interface DashboardTrendResponse {
+  range: DashboardRange;
+  points: DashboardTrendPoint[];
+}
+
+export async function fetchDashboardTrend(range: DashboardRange): Promise<DashboardTrendResponse> {
+  const res = await fetch(`/api/analytics/dashboard/trend?range=${range}`);
+  if (!res.ok) throw new Error("사용량 추이를 불러오지 못했습니다.");
   return res.json();
 }

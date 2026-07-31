@@ -1,5 +1,6 @@
 import type { CardState, EffortLevel } from "../store/dashboardStore";
 import type { RunStatus } from "../history/queries";
+import type { ProviderKeyStatus } from "../config/types";
 
 /** Client-side card status (dashboardStore) -> Korean display label. */
 export const CARD_STATUS_LABELS: Record<CardState["status"], string> = {
@@ -24,6 +25,21 @@ export const EFFORT_LABELS: Record<EffortLevel, string> = {
   high: "높음",
   xhigh: "매우 높음",
   max: "최대",
+};
+
+export type ProviderStatusTone = "online" | "error" | "unconfigured";
+
+/** Same "configured / last call errored / fine" logic TopBar's system status already uses, one level down to a single provider card. */
+export function providerStatusTone(keyStatus: ProviderKeyStatus | undefined): ProviderStatusTone {
+  if (!keyStatus?.configured) return "unconfigured";
+  if (keyStatus.lastCallStatus === "error") return "error";
+  return "online";
+}
+
+export const PROVIDER_STATUS_LABELS: Record<ProviderStatusTone, string> = {
+  online: "온라인",
+  error: "오류",
+  unconfigured: "미등록",
 };
 
 export function formatRelativeTimeKo(iso: string | null | undefined): string {

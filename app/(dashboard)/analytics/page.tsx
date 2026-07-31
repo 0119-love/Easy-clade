@@ -2,26 +2,16 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip as RechartsTooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import { ArrowDown, ArrowUp, Minus } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis } from "recharts";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProviderMark } from "@/components/ui/provider-mark";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChartTooltip } from "@/components/ui/chart-tooltip";
+import { TrendBadge } from "@/components/ui/trend-badge";
 import { PROVIDER_LABELS } from "@/lib/config/types";
 import { fetchAnalytics, fetchUsageBuckets } from "@/lib/analytics/client";
 import type { UsageGranularity } from "@/lib/history/queries";
-import { cn } from "@/lib/utils";
 
 const GRANULARITY_LABELS: Record<UsageGranularity, string> = {
   daily: "일별",
@@ -29,60 +19,8 @@ const GRANULARITY_LABELS: Record<UsageGranularity, string> = {
   monthly: "월별",
 };
 
-interface ChartTooltipProps {
-  active?: boolean;
-  payload?: { dataKey: string; name: string; value: number }[];
-  label?: string;
-}
-
-function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="glass-popover rounded-lg px-3 py-2 text-xs">
-      <div className="mb-1 font-medium text-foreground">{label}</div>
-      {payload.map((p) => (
-        <div key={p.dataKey} className="text-text-secondary">
-          {p.name}: <span className="font-mono text-foreground">{p.value.toLocaleString()}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function formatDateShort(date: string): string {
   return date.slice(5);
-}
-
-/**
- * "지난 30일 대비" -- current 30-day cost vs the 30 days before that. `null`
- * means there was no prior-period spend for this provider to compare
- * against (a brand new provider, or one you haven't used before this
- * month), not a 0% change -- those are different things and shouldn't look
- * the same.
- */
-function TrendBadge({ changePct }: { changePct: number | null }) {
-  if (changePct === null) {
-    return (
-      <span className="flex items-center gap-1 text-xs text-text-secondary">
-        <Minus className="size-3" /> 이전 기록 없음
-      </span>
-    );
-  }
-  const rounded = Math.round(changePct);
-  if (rounded === 0) {
-    return (
-      <span className="flex items-center gap-1 text-xs text-text-secondary">
-        <Minus className="size-3" /> 변동 없음
-      </span>
-    );
-  }
-  const isUp = rounded > 0;
-  return (
-    <span className={cn("flex items-center gap-1 text-xs", isUp ? "text-danger" : "text-success")}>
-      {isUp ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
-      {Math.abs(rounded)}%
-    </span>
-  );
 }
 
 export default function AnalyticsPage() {

@@ -1,14 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getRunsPaginated, getTodayStats, type RunStatus } from "@/lib/history/queries";
+import { getRunsPaginated, getTodayStats, localMidnightIso, type RunStatus } from "@/lib/history/queries";
 import { PROVIDER_IDS, type ProviderId } from "@/lib/config/types";
 import { requireUserContext } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
-
-function localMidnightIso(): string {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-}
 
 export async function GET(request: NextRequest) {
   const auth = await requireUserContext(request);

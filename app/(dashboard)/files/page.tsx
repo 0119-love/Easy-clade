@@ -52,7 +52,7 @@ export default function FilesPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">파일</h1>
         <p className="text-sm text-text-secondary">
-          업로드한 이미지는 대시보드 작성 창에서 모델에게 실제로 첨부해 보낼 수 있습니다. 이미지가 아닌 파일은
+          업로드한 이미지는 실행 화면의 작성 창에서 모델에게 실제로 첨부해 보낼 수 있습니다. 이미지가 아닌 파일은
           보관·다운로드만 지원하며 모델에 전달되지 않습니다.
         </p>
       </div>

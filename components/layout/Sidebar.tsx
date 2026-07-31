@@ -13,7 +13,7 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, emailInitials } from "@/lib/utils";
 import { GLASS_SPRING } from "@/components/ui/motion-presets";
 
 interface NavItem {
@@ -35,7 +35,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/settings", label: "설정", icon: Settings },
 ];
 
-export function Sidebar() {
+export function Sidebar({ userEmail }: { userEmail: string }) {
   const pathname = usePathname();
 
   return (
@@ -46,7 +46,10 @@ export function Sidebar() {
 
       <div className="relative flex flex-1 flex-col gap-0.5">
         {NAV_ITEMS.map((item) => {
-          const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          // "/app" (dashboard) must NOT stay active on "/app/run" (the run
+          // console) -- startsWith("/app/") would otherwise match both.
+          const active =
+            item.href === "/app" ? pathname === "/app" : pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
           return (
             <Link
@@ -69,6 +72,13 @@ export function Sidebar() {
             </Link>
           );
         })}
+      </div>
+
+      <div className="flex items-center gap-2.5 border-t border-[var(--glass-border)] px-3 pt-4">
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
+          {emailInitials(userEmail)}
+        </span>
+        <span className="truncate text-xs text-text-secondary">{userEmail}</span>
       </div>
     </nav>
   );
