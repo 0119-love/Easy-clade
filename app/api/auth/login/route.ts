@@ -16,7 +16,7 @@ interface LoginBody {
 
 const INVALID_CREDENTIALS = { error: "이메일 또는 비밀번호가 올바르지 않습니다." } as const;
 const WINDOW_MS = 15 * 60 * 1000;
-const MAX_ATTEMPTS = 10;
+const MAX_ATTEMPTS = 35;
 
 export async function POST(request: NextRequest) {
   const body = (await request.json()) as Partial<LoginBody>;
