@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { DashboardProviderCard } from "@/components/dashboard/DashboardProviderCard";
 import { SystemStatusCard } from "@/components/dashboard/SystemStatusCard";
@@ -16,13 +14,9 @@ import { useSystemStatus } from "@/lib/hooks/useSystemStatus";
 import { PROVIDER_IDS } from "@/lib/config/types";
 import type { ModelInfo } from "@/lib/providers/types";
 import { fetchActivityHeatmap, fetchAnalytics, fetchDashboardToday, fetchDashboardTrend } from "@/lib/analytics/client";
-import type { DashboardRange } from "@/lib/history/queries";
 
-const RANGE_LABELS: Record<DashboardRange, string> = {
-  "24h": "24시간",
-  "7d": "7일",
-  "30d": "30일",
-};
+// Fixed instead of user-selectable (the 24시간/7일/30일 tab control was removed).
+const TREND_RANGE = "7d";
 
 interface ModelsResponse {
   models: Record<string, ModelInfo[]>;
@@ -35,7 +29,6 @@ async function fetchModels(): Promise<ModelsResponse> {
 }
 
 export default function DashboardPage() {
-  const [range, setRange] = useState<DashboardRange>("7d");
   const status = useSystemStatus();
   const { data: modelsData, isPending: modelsPending } = useQuery({ queryKey: ["models"], queryFn: fetchModels });
   const { data: today, isPending: todayPending } = useQuery({
@@ -43,8 +36,8 @@ export default function DashboardPage() {
     queryFn: fetchDashboardToday,
   });
   const { data: trend, isPending: trendPending } = useQuery({
-    queryKey: ["dashboard", "trend", range],
-    queryFn: () => fetchDashboardTrend(range),
+    queryKey: ["dashboard", "trend", TREND_RANGE],
+    queryFn: () => fetchDashboardTrend(TREND_RANGE),
   });
   const { data: analytics, isPending: analyticsPending } = useQuery({ queryKey: ["analytics"], queryFn: fetchAnalytics });
   const { data: heatmap, isPending: heatmapPending } = useQuery({ queryKey: ["dashboard", "heatmap"], queryFn: fetchActivityHeatmap });
@@ -56,20 +49,9 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 px-6 py-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-[32px] font-bold tracking-tight text-foreground">대시보드</h1>
-          <p className="text-sm text-text-secondary">오늘의 사용량과 시스템 상태를 한눈에 확인하세요.</p>
-        </div>
-        <Tabs value={range} onValueChange={(v) => setRange(v as DashboardRange)}>
-          <TabsList>
-            {(["24h", "7d", "30d"] as const).map((r) => (
-              <TabsTrigger key={r} value={r}>
-                {RANGE_LABELS[r]}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+      <div>
+        <h1 className="text-[32px] font-bold tracking-tight text-foreground">대시보드</h1>
+        <p className="text-sm text-text-secondary">오늘의 사용량과 시스템 상태를 한눈에 확인하세요.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
