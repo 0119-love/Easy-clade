@@ -203,6 +203,59 @@
   --sidebar-ring: #6750a4;
 }
 
+/*
+ * Scoped Stripe/Linear-style flat theme -- applied only inside the public
+ * landing page's ".landing-theme" wrapper (app/page.tsx), never touching
+ * the Material Design 3 tokens above. Reuses the exact same variable names
+ * (--card, --primary, --border, etc.) so existing components (Card, Button,
+ * .glass*) automatically render in this style within the wrapper, with zero
+ * changes to those components and zero leakage outside the wrapper.
+ */
+.landing-theme {
+  --background: #f8fafc;
+  --card: #ffffff;
+  --popover: #ffffff;
+  --foreground: #111827;
+  --muted-foreground: #6b7280;
+  --border: #e5e7eb;
+  --primary: #111827;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f4f6;
+  --secondary-foreground: #111827;
+  --muted: #f3f4f6;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --radius: 0.75rem;
+  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --elevation-2: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --glass-border: var(--border);
+}
+
+/* Dark variant -- not part of the original spec (which only gave light
+   values), designed to the same flat/near-neutral principle. Accent
+   inverts to near-white on dark, matching how Vercel/Linear keep primary
+   actions high-contrast against a near-black surface. */
+.dark .landing-theme {
+  --background: #0a0a0b;
+  --card: #131316;
+  --popover: #131316;
+  --foreground: #f9fafb;
+  --muted-foreground: #9ca3af;
+  --border: #26262b;
+  --primary: #f9fafb;
+  --primary-foreground: #0a0a0b;
+  --secondary: #1c1c1f;
+  --secondary-foreground: #f9fafb;
+  --muted: #1c1c1f;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #f87171;
+  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --elevation-2: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --glass-border: var(--border);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -275,5 +328,41 @@
     background: var(--popover);
     border: 1px solid var(--glass-border);
     box-shadow: var(--elevation-2);
+  }
+
+  /* Landing page AI Core orbit -- components/landing/. Each badge wrapper
+     animates independently (not a shared rotating parent) so hovering one
+     can pause just that one via plain CSS, while its siblings keep moving.
+     The second rotate() term cancels the first so the badge itself (its
+     logo) stays upright while its position sweeps around the circle. */
+  @keyframes orbit {
+    from {
+      transform: rotate(0deg) translateX(var(--orbit-radius, 120px)) rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg) translateX(var(--orbit-radius, 120px)) rotate(-360deg);
+    }
+  }
+  .orbit-badge {
+    animation: orbit var(--orbit-duration, 50s) linear infinite;
+    animation-delay: var(--orbit-delay, 0s);
+  }
+  .orbit-badge:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes core-breathe {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.04);
+      opacity: 0.92;
+    }
+  }
+  .ai-core-breathe {
+    animation: core-breathe 4s ease-in-out infinite;
   }
 }

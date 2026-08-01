@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +32,7 @@ const DEFAULT_INTERVAL_MS: number = INTERVAL_OPTIONS[1].ms;
 // now mostly only shows through in the thin gaps between them, same as a
 // wallpaper behind opaque Material widgets rather than a full frosted mood.
 export function AmbientScenery() {
+  const pathname = usePathname();
   const { data } = useQuery({
     queryKey: ["backgrounds"],
     queryFn: fetchBackgrounds,
@@ -61,6 +63,10 @@ export function AmbientScenery() {
     localStorage.setItem(STORAGE_KEY, String(ms));
   }
 
+  // The public landing page has its own flat Stripe/Linear-style theme
+  // (.landing-theme, app/globals.css) -- no photo wallpaper there. Every
+  // other route (dashboard, auth pages) keeps this unchanged.
+  if (pathname === "/") return null;
   if (images.length === 0) return null;
 
   return (
