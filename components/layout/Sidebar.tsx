@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { BarChart3, Gavel, LayoutDashboard, Settings, Zap, type LucideIcon } from "lucide-react";
+import { BarChart3, Gavel, LayoutDashboard, Play, Settings, Zap, type LucideIcon } from "lucide-react";
 import { cn, emailInitials } from "@/lib/utils";
 import { GLASS_SPRING } from "@/components/ui/motion-presets";
 
@@ -15,9 +15,11 @@ interface NavItem {
 
 // Capped at 8 -- everything else (Projects, Workflows, Memory, Files, Tasks,
 // Integrations, Preferences) still exists as a real route, reachable via
-// the command palette (Cmd/Ctrl+K), just not surfaced in primary nav.
+// the command palette (Cmd/Ctrl+K), just not surfaced in primary nav. Run
+// console is an exception: surfaced directly since it's the primary action.
 const NAV_ITEMS: NavItem[] = [
   { href: "/app", label: "대시보드", icon: LayoutDashboard },
+  { href: "/app/run", label: "실행 화면", icon: Play },
   { href: "/committee", label: "AI Committee", icon: Gavel },
   { href: "/automations", label: "자동화", icon: Zap },
   { href: "/activity", label: "활동", icon: BarChart3 },
