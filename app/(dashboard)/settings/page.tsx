@@ -47,7 +47,10 @@ function ProviderKeyRow({ provider, status, onSaved, isLoading }: ProviderKeyRow
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ provider, apiKey: value.trim() }),
       });
-      if (!res.ok) throw new Error("저장에 실패했습니다.");
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(data?.error || "저장에 실패했습니다.");
+      }
       setValue("");
       setTestResult(null);
       onSaved();
@@ -259,8 +262,7 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">API 키</h1>
         <p className="text-sm text-text-secondary">
-          ~/.ai-command-center/config.json에 로컬로 저장됩니다. 서버 측에서만 사용되며, 각 프로바이더로 보내는 것 외에는
-          어디로도 전송되지 않습니다.
+          암호화되어 서버 데이터베이스에 저장됩니다. 각 프로바이더로 보내는 것 외에는 어디로도 전송되지 않습니다.
         </p>
       </div>
       <div className="space-y-4">
