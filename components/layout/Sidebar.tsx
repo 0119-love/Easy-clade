@@ -7,6 +7,7 @@ import {
   BarChart3,
   Bot,
   BookOpen,
+  Gavel,
   LayoutDashboard,
   Settings,
   Sparkles,
@@ -27,6 +28,7 @@ interface NavItem {
 // the command palette (Cmd/Ctrl+K), just not surfaced in primary nav.
 const NAV_ITEMS: NavItem[] = [
   { href: "/app", label: "대시보드", icon: LayoutDashboard },
+  { href: "/committee", label: "AI Committee", icon: Gavel },
   { href: "/models", label: "AI 모델", icon: Bot },
   { href: "/agents", label: "에이전트", icon: Sparkles },
   { href: "/knowledge", label: "지식", icon: BookOpen },

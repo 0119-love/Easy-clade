@@ -186,6 +186,78 @@ const SCHEMA_STATEMENTS = [
     config JSONB NOT NULL,
     updated_at TEXT NOT NULL
   )`,
+  // AI Committee Engine: run -> loop -> stage-call, one level deeper than
+  // runs/judge_runs. Unlike runs (insert-only-at-completion), a committee run
+  // is inserted at start (status='running') and updated incrementally as
+  // loops/stage-calls complete, so a crash mid-run still leaves real partial
+  // history instead of nothing.
+  `CREATE TABLE IF NOT EXISTS committee_runs (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    mission TEXT NOT NULL,
+    optimized_mission TEXT,
+    context_json TEXT NOT NULL,
+    providers_json TEXT NOT NULL,
+    target_quality_score INTEGER NOT NULL,
+    max_loops INTEGER NOT NULL,
+    judge_provider TEXT NOT NULL,
+    judge_model TEXT NOT NULL,
+    estimated_cost_usd DOUBLE PRECISION NOT NULL,
+    estimated_seconds INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'running',
+    final_consensus_text TEXT,
+    final_quality_score INTEGER,
+    best_loop_number INTEGER,
+    total_cost_usd DOUBLE PRECISION NOT NULL DEFAULT 0,
+    total_input_tokens INTEGER NOT NULL DEFAULT 0,
+    total_output_tokens INTEGER NOT NULL DEFAULT 0,
+    error_message TEXT,
+    started_at TEXT NOT NULL,
+    completed_at TEXT
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_committee_runs_user ON committee_runs(user_id)`,
+  `CREATE TABLE IF NOT EXISTS committee_loops (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    committee_run_id INTEGER NOT NULL REFERENCES committee_runs(id),
+    loop_number INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'running',
+    consensus_text TEXT,
+    quality_score INTEGER,
+    quality_score_raw TEXT,
+    participating_providers_json TEXT NOT NULL,
+    excluded_providers_json TEXT NOT NULL,
+    total_input_tokens INTEGER NOT NULL DEFAULT 0,
+    total_output_tokens INTEGER NOT NULL DEFAULT 0,
+    total_cost_usd DOUBLE PRECISION NOT NULL DEFAULT 0,
+    started_at TEXT NOT NULL,
+    completed_at TEXT
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_committee_loops_run ON committee_loops(committee_run_id)`,
+  // response_text is kept in full for every stage call (not just the final
+  // per-loop consensus) -- this app has never discarded LLM response text
+  // anywhere else (runs.response_text keeps everything), and it's the only
+  // way to later answer "why did loop 3 score lower than loop 2."
+  `CREATE TABLE IF NOT EXISTS committee_stage_calls (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    committee_run_id INTEGER NOT NULL REFERENCES committee_runs(id),
+    loop_number INTEGER NOT NULL,
+    stage TEXT NOT NULL,
+    provider TEXT NOT NULL,
+    model TEXT NOT NULL,
+    status TEXT NOT NULL,
+    response_text TEXT,
+    error_message TEXT,
+    attempt_number INTEGER NOT NULL DEFAULT 1,
+    input_tokens INTEGER NOT NULL DEFAULT 0,
+    output_tokens INTEGER NOT NULL DEFAULT 0,
+    cost_usd DOUBLE PRECISION NOT NULL DEFAULT 0,
+    duration_ms INTEGER NOT NULL DEFAULT 0,
+    started_at TEXT NOT NULL,
+    completed_at TEXT
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_committee_stage_calls_run ON committee_stage_calls(committee_run_id)`,
 ];
 
 let sqlClient: NeonQueryFunction<false, true> | null = null;
