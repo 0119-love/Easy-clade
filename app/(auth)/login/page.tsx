@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Eye, EyeOff, KeyRound, Lock, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,19 +13,56 @@ function nextPath(): string {
   return new URLSearchParams(window.location.search).get("next") || "/app";
 }
 
+/** Sends the browser off to the provider's consent screen -- not a fetch, a real navigation. */
+function startOAuth(provider: "google" | "github") {
+  window.location.href = `/api/auth/${provider}/start?next=${encodeURIComponent(nextPath())}`;
+}
+
+function GoogleIcon() {
+  return (
+    <svg className="size-4" viewBox="0 0 48 48" aria-hidden="true">
+      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z" />
+      <path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4c-7.4 0-13.8 4.2-17.7 10.7z" />
+      <path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.6C29.6 35 26.9 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.6 5.1C9.9 39.6 16.4 44 24 44z" />
+      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.3-4.1 5.8l6.6 5.6C41.5 36 44 30.6 44 24c0-1.3-.1-2.7-.4-3.5z" />
+    </svg>
+  );
+}
+
+function GithubIcon() {
+  return (
+    <svg className="size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12Z" />
+    </svg>
+  );
+}
+
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [mode, setMode] = useState<"password" | "key">("password");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [apiKey, setApiKey] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  // A failed OAuth redirect lands back here with ?error=... -- once the user
+  // acts again (submits a form, retries a provider), the fresh submitError
+  // takes over instead.
+  const error = submitError ?? searchParams.get("error");
 
   async function submit(url: string, body: unknown) {
-    setError(null);
+    setSubmitError(null);
     setPending(true);
     try {
       const res = await fetch(url, {
@@ -39,13 +76,13 @@ export default function LoginPage() {
           router.push(`/verify-email?email=${encodeURIComponent(data.email)}`);
           return;
         }
-        setError(data.error ?? "로그인에 실패했습니다.");
+        setSubmitError(data.error ?? "로그인에 실패했습니다.");
         return;
       }
       router.push(nextPath());
       router.refresh();
     } catch {
-      setError("네트워크 오류로 로그인하지 못했습니다.");
+      setSubmitError("네트워크 오류로 로그인하지 못했습니다.");
     } finally {
       setPending(false);
     }
@@ -178,19 +215,41 @@ export default function LoginPage() {
           <div className="h-px flex-1 bg-border" /> 또는 <div className="h-px flex-1 bg-border" />
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          size="lg"
-          className="w-full justify-center"
-          onClick={() => {
-            setMode((m) => (m === "password" ? "key" : "password"));
-            setError(null);
-          }}
-        >
-          <KeyRound className="size-4" />
-          {mode === "password" ? "API 키로 로그인" : "이메일/비밀번호로 로그인"}
-        </Button>
+        <div className="space-y-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="w-full justify-center"
+            onClick={() => startOAuth("google")}
+          >
+            <GoogleIcon />
+            Google로 로그인
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="w-full justify-center"
+            onClick={() => startOAuth("github")}
+          >
+            <GithubIcon />
+            GitHub로 로그인
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="w-full justify-center"
+            onClick={() => {
+              setMode((m) => (m === "password" ? "key" : "password"));
+              setSubmitError(null);
+            }}
+          >
+            <KeyRound className="size-4" />
+            {mode === "password" ? "API 키로 로그인" : "이메일/비밀번호로 로그인"}
+          </Button>
+        </div>
 
         <p className="mt-6 text-center text-sm text-text-secondary">
           계정이 없으신가요?{" "}

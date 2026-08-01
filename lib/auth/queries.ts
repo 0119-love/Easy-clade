@@ -4,7 +4,8 @@ import { execute, queryAll, queryOne } from "../history/db";
 export interface UserRow {
   id: number;
   email: string;
-  passwordHash: string;
+  // null for accounts created via Google/GitHub login that never set a password.
+  passwordHash: string | null;
   emailVerified: boolean;
   createdAt: string;
 }
@@ -13,7 +14,7 @@ function toUser(row: Record<string, unknown>): UserRow {
   return {
     id: row.id as number,
     email: row.email as string,
-    passwordHash: row.password_hash as string,
+    passwordHash: (row.password_hash as string | null) ?? null,
     emailVerified: Boolean(row.email_verified),
     createdAt: row.created_at as string,
   };
@@ -48,6 +49,67 @@ export async function createUser(email: string, passwordHash: string): Promise<U
 export async function listUsers(): Promise<UserRow[]> {
   const rows = await queryAll("SELECT * FROM users");
   return rows.map(toUser);
+}
+
+/** Looks up which user (if any) a Google/GitHub identity is already linked to. */
+export async function findUserByOAuthAccount(provider: string, providerUserId: string): Promise<UserRow | null> {
+  const row = await queryOne(
+    `SELECT users.* FROM oauth_accounts
+     JOIN users ON users.id = oauth_accounts.user_id
+     WHERE oauth_accounts.provider = ? AND oauth_accounts.provider_user_id = ?`,
+    [provider, providerUserId],
+  );
+  return row ? toUser(row) : null;
+}
+
+export async function linkOAuthAccount(userId: number, provider: string, providerUserId: string): Promise<void> {
+  await execute("INSERT INTO oauth_accounts (user_id, provider, provider_user_id, created_at) VALUES (?, ?, ?, ?)", [
+    userId,
+    provider,
+    providerUserId,
+    new Date().toISOString(),
+  ]);
+}
+
+/**
+ * Resolves the app user for a Google/GitHub sign-in: an already-linked
+ * identity wins first, then falls back to matching an existing
+ * password-based account by email (auto-linking it, since the provider has
+ * already verified this email), and only creates a new account if neither
+ * matches.
+ */
+export async function resolveOAuthUser(
+  provider: string,
+  identity: { providerUserId: string; email: string },
+): Promise<UserRow> {
+  const linked = await findUserByOAuthAccount(provider, identity.providerUserId);
+  if (linked) return linked;
+
+  const existing = await findUserByEmail(identity.email);
+  if (existing) {
+    await linkOAuthAccount(existing.id, provider, identity.providerUserId);
+    return existing;
+  }
+
+  return createOAuthUser(identity.email, provider, identity.providerUserId);
+}
+
+/** Creates a brand-new account for a first-time Google/GitHub sign-in -- no password, email already provider-verified. */
+export async function createOAuthUser(email: string, provider: string, providerUserId: string): Promise<UserRow> {
+  const createdAt = new Date().toISOString();
+  const normalizedEmail = email.trim().toLowerCase();
+  const row = await queryOne<{ id: number }>(
+    "INSERT INTO users (email, password_hash, email_verified, created_at) VALUES (?, NULL, 1, ?) RETURNING id",
+    [normalizedEmail, createdAt],
+  );
+  await linkOAuthAccount(row!.id, provider, providerUserId);
+  return {
+    id: row!.id,
+    email: normalizedEmail,
+    passwordHash: null,
+    emailVerified: true,
+    createdAt,
+  };
 }
 
 const SESSION_TTL_MS = {

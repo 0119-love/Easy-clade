@@ -13,6 +13,10 @@ const SCHEMA_STATEMENTS = [
     email_verified INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL
   )`,
+  // Accounts created via Google/GitHub login have no password at all --
+  // nullable so `createOAuthUser` (lib/auth/queries.ts) can leave it unset
+  // instead of inventing a fake hash nobody could ever log in with anyway.
+  `ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL`,
   `CREATE TABLE IF NOT EXISTS projects (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id),
@@ -157,6 +161,18 @@ const SCHEMA_STATEMENTS = [
     created_at TEXT NOT NULL
   )`,
   `CREATE INDEX IF NOT EXISTS idx_email_verification_user ON email_verification_codes(user_id)`,
+  // Links a users row to a Google/GitHub identity. One user can hold both --
+  // signing in with a second provider under the same (verified) email just
+  // adds a second row here instead of creating a duplicate account.
+  `CREATE TABLE IF NOT EXISTS oauth_accounts (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    provider TEXT NOT NULL,
+    provider_user_id TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE (provider, provider_user_id)
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_oauth_accounts_user ON oauth_accounts(user_id)`,
   // Replaces the old per-user ~/.ai-command-center/users/<id>/config.json file
   // (provider keys/OAuth tokens/budget/preferences) -- see lib/config/keysStore.ts.
   // The secret fields inside `config` are encrypted by lib/config/crypto.ts

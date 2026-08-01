@@ -34,7 +34,9 @@ export async function POST(request: NextRequest) {
   }
 
   const user = await findUserByEmail(body.email);
-  if (!user || !(await verifyPassword(body.password, user.passwordHash))) {
+  // passwordHash is null for accounts created via Google/GitHub login --
+  // treat that exactly like a wrong password instead of erroring.
+  if (!user || !user.passwordHash || !(await verifyPassword(body.password, user.passwordHash))) {
     return NextResponse.json(INVALID_CREDENTIALS, { status: 401 });
   }
 
