@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { BarChart3, Gavel, LayoutDashboard, Play, Settings, Zap, type LucideIcon } from "lucide-react";
+import { BarChart3, BrainCircuit, Gavel, LayoutDashboard, Play, Settings, Zap, type LucideIcon } from "lucide-react";
 import { cn, emailInitials } from "@/lib/utils";
 import { GLASS_SPRING } from "@/components/ui/motion-presets";
 
@@ -22,6 +22,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/app/run", label: "실행 화면", icon: Play },
   { href: "/committee", label: "AI Committee", icon: Gavel },
   { href: "/automations", label: "자동화", icon: Zap },
+  { href: "/brain", label: "브레인", icon: BrainCircuit },
   { href: "/activity", label: "활동", icon: BarChart3 },
   { href: "/settings", label: "설정", icon: Settings },
 ];
