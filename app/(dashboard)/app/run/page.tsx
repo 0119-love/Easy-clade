@@ -159,33 +159,20 @@ export default function RunConsolePage() {
           </div>
         </div>
 
-        {useScrollRow ? (
-          <div className="scroll-fade-x -mx-1 flex gap-4 overflow-x-auto px-1 pb-2">
-            {activeProviders.map((provider) => (
-              <div key={provider} id={`model-card-${provider}`} className="w-80 shrink-0 scroll-mt-6">
-                <ModelCard
-                  provider={provider}
-                  models={modelsData?.models[provider] ?? []}
-                  keyStatus={keysStatus?.providers[provider]}
-                  isLoading={modelsPending || keysPending}
-                />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className={`grid grid-cols-1 gap-4 ${gridColsClass}`}>
-            {activeProviders.map((provider) => (
-              <div key={provider} id={`model-card-${provider}`} className="scroll-mt-6">
-                <ModelCard
-                  provider={provider}
-                  models={modelsData?.models[provider] ?? []}
-                  keyStatus={keysStatus?.providers[provider]}
-                  isLoading={modelsPending || keysPending}
-                />
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Model cards always wrap into rows instead of scrolling sideways --
+            users need to compare every active provider's settings at a glance. */}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 2xl:grid-cols-6">
+          {activeProviders.map((provider) => (
+            <div key={provider} id={`model-card-${provider}`} className="scroll-mt-6">
+              <ModelCard
+                provider={provider}
+                models={modelsData?.models[provider] ?? []}
+                keyStatus={keysStatus?.providers[provider]}
+                isLoading={modelsPending || keysPending}
+              />
+            </div>
+          ))}
+        </div>
 
         <PromptComposer keysStatus={keysStatus} activeProviders={activeProviders} />
 
