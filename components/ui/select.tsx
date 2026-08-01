@@ -17,7 +17,7 @@ const selectTriggerVariants = cva(
     variants: {
       variant: {
         outline:
-          "glass-chip rounded-full py-2 pr-2 pl-3 focus-visible:border-ring aria-invalid:border-destructive",
+          "glass-chip rounded-[10px] py-2 pr-2 pl-3 focus-visible:border-ring aria-invalid:border-destructive",
         ghost:
           "border border-transparent bg-transparent p-0 text-text-secondary hover:text-foreground",
       },
@@ -105,7 +105,7 @@ function SelectContent({
           data-slot="select-content"
           data-align-trigger={alignItemWithTrigger}
           className={cn(
-            "glass-popover relative isolate z-50 max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-xl p-1.5 text-popover-foreground shadow-[0_16px_48px_-12px_rgba(0,0,0,0.65)] data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+            "glass-popover relative isolate z-50 max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-xl p-1.5 text-popover-foreground data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
             POPOVER_MOTION,
             className
           )}

@@ -84,176 +84,136 @@
 }
 
 /*
- * Material Design 3 baseline palette (the default "Material You" purple
- * seed, #6750A4) -- dark theme. Real M3 role names in the comments so this
- * stays traceable back to the spec; mapped onto this app's existing
- * shadcn-style slots (primary/secondary/muted/accent/card/popover/border)
- * so components didn't need to be rewritten to consume new token names.
+ * Stripe/Linear-style flat palette -- dark theme. Replaces the earlier
+ * Material Design 3 palette app-wide (previously only scoped to the public
+ * landing page via a ".landing-theme" wrapper class, now promoted to the
+ * real tokens since every page uses this look). Near-black surface, accent
+ * inverted to near-white for contrast (matches Vercel/Linear dark mode).
  */
 .dark {
-  --background: #1c1b1f; /* M3 background */
-  --foreground: #e6e1e5; /* M3 onBackground */
-  --surface: #1c1b1f; /* M3 surface */
-  --panel: #211f26; /* M3 surfaceContainer -- sidebar/rail */
-  --card: #211f26; /* M3 surfaceContainer */
-  --card-foreground: #e6e1e5; /* M3 onSurface */
-  --popover: #2b2930; /* M3 surfaceContainerHigh -- menus/dialogs sit one level up */
-  --popover-foreground: #e6e1e5;
+  --background: #0a0a0b;
+  --foreground: #f9fafb;
+  --surface: #0a0a0b;
+  --panel: #131316;
+  --card: #131316;
+  --card-foreground: #f9fafb;
+  --popover: #131316;
+  --popover-foreground: #f9fafb;
 
-  /* Custom M3-style tonal extensions (the spec's baseline only defines
-     primary/secondary/tertiary/error) -- success/warning tuned to the same
-     "readable on this surface" contrast target as error below. */
-  --success: #7dda9a;
-  --warning: #ffd199;
-  --danger: #f2b8b5; /* M3 dark-theme "error" role */
-
-  --primary: #d0bcff; /* M3 primary (dark) */
-  --primary-foreground: #381e72; /* M3 onPrimary */
-  --secondary: #4a4458; /* M3 secondaryContainer */
-  --secondary-foreground: #e8def8; /* M3 onSecondaryContainer */
-  --muted: #49454f; /* M3 surfaceVariant */
-  --muted-foreground: #cac4d0; /* M3 onSurfaceVariant */
-  --accent: rgba(208, 188, 255, 0.08); /* M3 "state layer": primary at hover opacity */
-  --accent-foreground: var(--foreground);
-  --destructive: var(--danger);
-  --border: rgba(147, 143, 153, 0.3); /* M3 outline, hairline opacity */
-  --input: rgba(147, 143, 153, 0.5); /* M3 outline */
-  --ring: #d0bcff; /* M3 primary -- focus rings are primary-colored, not neutral */
-
-  /* Chart categorical slots -- primary/secondary/tertiary plus two tonal
-     extensions (success green, info blue), all pulled to the same M3 tone
-     step so none reads as more "important" than the others. */
-  --chart-1: #d0bcff;
-  --chart-2: #efb8c8;
-  --chart-3: #9ecaff;
-  --chart-4: #7dda9a;
-  --chart-5: #ccc2dc;
-
-  /* Elevated-surface tokens (menus/dialogs/tooltips/outlined chips) --
-     replaces the old translucent "Liquid Glass" tokens. Everything here is
-     an OPAQUE Material surface + elevation shadow now, no blur/transparency. */
-  --glass-bg: var(--card); /* surfaceContainer */
-  --glass-bg-strong: var(--popover); /* surfaceContainerHigh */
-  --glass-border: var(--border);
-  --elevation-1: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
-  --elevation-2: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
-  --elevation-3: 0px 1px 3px 0px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15);
-
-  --sidebar: #1c1b1f;
-  --sidebar-foreground: #e6e1e5;
-  --sidebar-primary: #d0bcff;
-  --sidebar-primary-foreground: #381e72;
-  --sidebar-accent: rgba(208, 188, 255, 0.08);
-  --sidebar-accent-foreground: #e6e1e5;
-  --sidebar-border: rgba(147, 143, 153, 0.3);
-  --sidebar-ring: #d0bcff;
-}
-
-/*
- * Material Design 3 baseline palette -- light theme (same #6750A4 seed).
- */
-:root,
-.light {
-  --background: #fffbfe; /* M3 background */
-  --foreground: #1c1b1f; /* M3 onBackground */
-  --surface: #fffbfe;
-  --panel: #f3edf7; /* M3 surfaceContainer */
-  --card: #f3edf7;
-  --card-foreground: #1c1b1f;
-  --popover: #ece6f0; /* M3 surfaceContainerHigh */
-  --popover-foreground: #1c1b1f;
-
-  --success: #146c2e;
-  --warning: #7a5900;
-  --danger: #b3261e; /* M3 light-theme "error" role */
-
-  --primary: #6750a4; /* M3 primary (light) */
-  --primary-foreground: #ffffff; /* M3 onPrimary */
-  --secondary: #e8def8; /* M3 secondaryContainer */
-  --secondary-foreground: #1d192b; /* M3 onSecondaryContainer */
-  --muted: #e7e0ec; /* M3 surfaceVariant */
-  --muted-foreground: #49454f; /* M3 onSurfaceVariant */
-  --accent: rgba(103, 80, 164, 0.08); /* M3 state layer: primary at hover opacity */
-  --accent-foreground: var(--foreground);
-  --destructive: var(--danger);
-  --border: rgba(121, 116, 126, 0.25); /* M3 outline, hairline opacity */
-  --input: rgba(121, 116, 126, 0.4); /* M3 outline */
-  --ring: #6750a4;
-
-  --chart-1: #6750a4;
-  --chart-2: #7d5260;
-  --chart-3: #0061a4;
-  --chart-4: #146c2e;
-  --chart-5: #625b71;
-
-  --glass-bg: var(--card);
-  --glass-bg-strong: var(--popover);
-  --glass-border: var(--border);
-  --elevation-1: 0px 1px 2px 0px rgba(0, 0, 0, 0.15), 0px 1px 3px 1px rgba(0, 0, 0, 0.08);
-  --elevation-2: 0px 1px 2px 0px rgba(0, 0, 0, 0.15), 0px 2px 6px 2px rgba(0, 0, 0, 0.08);
-  --elevation-3: 0px 1px 3px 0px rgba(0, 0, 0, 0.15), 0px 4px 8px 3px rgba(0, 0, 0, 0.08);
-
-  --sidebar: #fffbfe;
-  --sidebar-foreground: #1c1b1f;
-  --sidebar-primary: #6750a4;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(103, 80, 164, 0.08);
-  --sidebar-accent-foreground: #1c1b1f;
-  --sidebar-border: rgba(121, 116, 126, 0.25);
-  --sidebar-ring: #6750a4;
-}
-
-/*
- * Scoped Stripe/Linear-style flat theme -- applied only inside the public
- * landing page's ".landing-theme" wrapper (app/page.tsx), never touching
- * the Material Design 3 tokens above. Reuses the exact same variable names
- * (--card, --primary, --border, etc.) so existing components (Card, Button,
- * .glass*) automatically render in this style within the wrapper, with zero
- * changes to those components and zero leakage outside the wrapper.
- */
-.landing-theme {
-  --background: #f8fafc;
-  --card: #ffffff;
-  --popover: #ffffff;
-  --foreground: #111827;
-  --muted-foreground: #6b7280;
-  --border: #e5e7eb;
-  --primary: #111827;
-  --primary-foreground: #ffffff;
-  --secondary: #f3f4f6;
-  --secondary-foreground: #111827;
-  --muted: #f3f4f6;
   --success: #10b981;
   --warning: #f59e0b;
-  --danger: #ef4444;
-  --radius: 0.75rem;
-  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --elevation-2: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --glass-border: var(--border);
-}
+  --danger: #f87171;
 
-/* Dark variant -- not part of the original spec (which only gave light
-   values), designed to the same flat/near-neutral principle. Accent
-   inverts to near-white on dark, matching how Vercel/Linear keep primary
-   actions high-contrast against a near-black surface. */
-.dark .landing-theme {
-  --background: #0a0a0b;
-  --card: #131316;
-  --popover: #131316;
-  --foreground: #f9fafb;
-  --muted-foreground: #9ca3af;
-  --border: #26262b;
   --primary: #f9fafb;
   --primary-foreground: #0a0a0b;
   --secondary: #1c1c1f;
   --secondary-foreground: #f9fafb;
   --muted: #1c1c1f;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #f87171;
+  --muted-foreground: #9ca3af;
+  --accent: var(--secondary);
+  --accent-foreground: var(--foreground);
+  --destructive: var(--danger);
+  --border: #26262b;
+  --input: #26262b;
+  --ring: var(--primary);
+
+  /* Not currently consumed by any real multi-series chart (TokenTrendChart/
+     CostBreakdownChart carry their own validated per-provider palette) --
+     kept as an inert neutral set. Re-derive through the dataviz skill's
+     validator before ever wiring a real categorical chart to these. */
+  --chart-1: #f9fafb;
+  --chart-2: #9ca3af;
+  --chart-3: #6b7280;
+  --chart-4: #4b5563;
+  --chart-5: #374151;
+
+  --glass-bg: var(--card);
+  --glass-bg-strong: var(--popover);
+  --glass-border: var(--border);
   --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.4);
   --elevation-2: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --elevation-3: 0 1px 2px rgba(0, 0, 0, 0.4);
+
+  /* Activity heatmap (components/dashboard/ActivityHeatmap.tsx) -- a real
+     sequential/ordinal ramp (single hue, monotone lightness), validated with
+     the dataviz skill's --ordinal check (light-end contrast >= 2:1 against
+     --background, adjacent steps >= 0.06 ΔL) -- not hand-picked. */
+  --heatmap-0: #6b7280;
+  --heatmap-1: #8b8b93;
+  --heatmap-2: #a1a1aa;
+  --heatmap-3: #d4d4d8;
+  --heatmap-4: #f9fafb;
+
+  /* Not consumed by Sidebar.tsx (it reads --glass-bg/--glass-border above)
+     -- kept in sync anyway for format/future-proofing, no visual effect. */
+  --sidebar: var(--background);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--primary);
+}
+
+/*
+ * Stripe/Linear-style flat palette -- light theme.
+ */
+:root,
+.light {
+  --background: #f8fafc;
+  --foreground: #111827;
+  --surface: #f8fafc;
+  --panel: #ffffff;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --popover: #ffffff;
+  --popover-foreground: #111827;
+
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  --primary: #111827;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f4f6;
+  --secondary-foreground: #111827;
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+  --accent: var(--secondary);
+  --accent-foreground: var(--foreground);
+  --destructive: var(--danger);
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: var(--primary);
+
+  --chart-1: #111827;
+  --chart-2: #6b7280;
+  --chart-3: #9ca3af;
+  --chart-4: #cbd5e1;
+  --chart-5: #d1d5db;
+
+  --glass-bg: var(--card);
+  --glass-bg-strong: var(--popover);
   --glass-border: var(--border);
+  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --elevation-2: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --elevation-3: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+  --heatmap-0: #94a3b8;
+  --heatmap-1: #6b7280;
+  --heatmap-2: #4b5563;
+  --heatmap-3: #374151;
+  --heatmap-4: #111827;
+
+  --sidebar: var(--background);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--primary);
 }
 
 @layer base {

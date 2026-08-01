@@ -4,8 +4,6 @@ import { Search } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 
-// bottom-24 (not bottom-5, like AmbientScenery's interval-picker chip) so the
-// two floating elements never overlap.
 export function DashboardFab() {
   const setCommandPaletteOpen = useDashboardStore((s) => s.setCommandPaletteOpen);
 

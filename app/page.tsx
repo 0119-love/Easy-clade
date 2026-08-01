@@ -25,7 +25,7 @@ const FEATURES = [
 
 export default function LandingPage() {
   return (
-    <div className="landing-theme flex flex-1 flex-col bg-background px-6 py-16">
+    <div className="flex flex-1 flex-col bg-background px-6 py-16">
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center gap-16 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex max-w-xl flex-col items-center text-center lg:items-start lg:text-left">
           <h1 className="text-[40px] font-bold leading-[1.1] tracking-tight text-foreground sm:text-[48px]">

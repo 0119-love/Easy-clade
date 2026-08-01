@@ -20,8 +20,15 @@ interface DashboardProviderCardProps {
   keyStatus: ProviderKeyStatus | undefined;
   todayTokens: number;
   todayRunCount: number;
+  /** Real wall-clock average from runs.duration_ms -- null when there's no data yet today. */
+  avgDurationMs: number | null;
   sparklineData: number[];
   isLoading?: boolean;
+}
+
+function formatDurationShort(ms: number | null): string {
+  if (ms === null) return "–";
+  return `${(ms / 1000).toFixed(1)}초`;
 }
 
 const STATUS_BADGE_CLASS: Record<ProviderStatusTone, string> = {
@@ -36,6 +43,7 @@ export function DashboardProviderCard({
   keyStatus,
   todayTokens,
   todayRunCount,
+  avgDurationMs,
   sparklineData,
   isLoading,
 }: DashboardProviderCardProps) {
@@ -68,18 +76,26 @@ export function DashboardProviderCard({
       ) : (
         <div>
           <div className="font-mono text-2xl font-semibold text-foreground">{todayTokens.toLocaleString()}</div>
-          <div className="text-xs text-text-secondary">오늘 토큰 · {todayRunCount.toLocaleString()}회 실행</div>
+          <div className="text-xs text-text-secondary">
+            오늘 토큰 · {todayRunCount.toLocaleString()}회 실행 · 평균 {formatDurationShort(avgDurationMs)}
+          </div>
         </div>
       )}
 
       <Sparkline data={sparklineData} color={`var(${colorVar})`} height={36} />
 
-      <Link
-        href={`/app/run?provider=${provider}`}
-        className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "w-full")}
-      >
-        대화 열기 <ArrowRight className="size-3.5" />
-      </Link>
+      {tone === "unconfigured" ? (
+        <Link href="/settings" className={cn(buttonVariants({ variant: "default", size: "sm" }), "w-full")}>
+          등록하기 <ArrowRight className="size-3.5" />
+        </Link>
+      ) : (
+        <Link
+          href={`/app/run?provider=${provider}`}
+          className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "w-full")}
+        >
+          대화 열기 <ArrowRight className="size-3.5" />
+        </Link>
+      )}
     </Card>
   );
 }

@@ -4,27 +4,8 @@ import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip as
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartTooltip } from "@/components/ui/chart-tooltip";
 import { PROVIDER_IDS, PROVIDER_LABELS, type ProviderId } from "@/lib/config/types";
+import { CHART_PROVIDER_COLORS } from "@/lib/config/chartColors";
 import type { DashboardTrendPoint } from "@/app/api/analytics/dashboard/trend/route";
-
-/**
- * Chart-only palette -- deliberately separate from the shared --provider-*
- * tokens (badges/icons elsewhere), validated with the dataviz skill's
- * categorical-palette checker for a 6-line simultaneous chart:
- * xai/openai/google were re-stepped because the shared badge colors read
- * too gray (xai had ~zero chroma) or collided under deuteranopia/
- * protanopia simulation (openai vs google, adjacent ΔE 3.0 against an 8
- * target). anthropic/perplexity/deepseek are untouched brand colors, left
- * as-is by design -- this app's badge/icon colors elsewhere are out of
- * scope for this chart-only fix.
- */
-const CHART_COLORS: Record<ProviderId, string> = {
-  anthropic: "#e08d6d",
-  openai: "#8b4fd1",
-  google: "#2a9dc9",
-  xai: "#a3822f",
-  perplexity: "#7fd4c9",
-  deepseek: "#7b9cf0",
-};
 
 function formatBucketLabel(bucket: string): string {
   // "YYYY-MM-DD HH:00" (24h view) -> "HH:00" ; "YYYY-MM-DD" (7d/30d) -> "MM-DD"
@@ -62,7 +43,7 @@ export function TokenTrendChart({ points, isLoading }: TokenTrendChartProps) {
             type="monotone"
             dataKey={id}
             name={PROVIDER_LABELS[id]}
-            stroke={CHART_COLORS[id]}
+            stroke={CHART_PROVIDER_COLORS[id]}
             strokeWidth={2}
             dot={false}
           />

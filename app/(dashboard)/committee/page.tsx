@@ -72,10 +72,10 @@ export default function CommitteePage() {
   const retrying = Object.values(stageCalls).some((c) => c.status === "error" && c.loopNumber === currentLoop);
 
   return (
-    <div className="max-w-4xl space-y-6 px-10 py-10">
+    <div className="max-w-4xl space-y-6 px-6 py-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">AI Committee Engine</h1>
+          <h1 className="text-[32px] font-bold tracking-tight text-foreground">AI Committee Engine</h1>
           <p className="text-sm text-text-secondary">여러 AI가 서로 검토하고 다듬어가며 하나의 답을 만들어냅니다.</p>
         </div>
         {runStatus === "running" && (

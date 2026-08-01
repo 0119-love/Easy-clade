@@ -123,9 +123,9 @@ export default function RunConsolePage() {
         <ProviderDeepLinkScroller />
       </Suspense>
 
-      <div className="flex flex-1 flex-col gap-10 overflow-y-auto px-10 py-10">
+      <div className="flex flex-1 flex-col gap-10 overflow-y-auto px-6 py-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">실행 화면</h1>
+          <h1 className="text-[32px] font-bold tracking-tight text-foreground">실행 화면</h1>
           <div className="flex items-center gap-2">
             {/* Active project is now chosen globally from the TopBar (visible on every
                 page), not duplicated here -- see components/layout/TopBar.tsx. */}

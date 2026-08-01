@@ -7,7 +7,13 @@ import { cn } from "@/lib/utils";
  * yet this period), not a 0% change -- those are different things and
  * shouldn't look the same.
  */
-export function TrendBadge({ changePct }: { changePct: number | null }) {
+interface TrendBadgeProps {
+  changePct: number | null;
+  /** Flips which direction reads as "good" -- e.g. success rate (up = good) or response time (down = good), vs. the default (up = spending more = bad). */
+  invert?: boolean;
+}
+
+export function TrendBadge({ changePct, invert = false }: TrendBadgeProps) {
   if (changePct === null) {
     return (
       <span className="flex items-center gap-1 text-xs text-text-secondary">
@@ -24,8 +30,9 @@ export function TrendBadge({ changePct }: { changePct: number | null }) {
     );
   }
   const isUp = rounded > 0;
+  const isGood = invert ? isUp : !isUp;
   return (
-    <span className={cn("flex items-center gap-1 text-xs", isUp ? "text-danger" : "text-success")}>
+    <span className={cn("flex items-center gap-1 text-xs", isGood ? "text-success" : "text-danger")}>
       {isUp ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
       {Math.abs(rounded)}%
     </span>

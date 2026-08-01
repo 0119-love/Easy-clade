@@ -28,7 +28,7 @@ export function Sidebar({ userEmail }: { userEmail: string }) {
   const pathname = usePathname();
 
   return (
-    <nav className="relative flex w-56 shrink-0 flex-col overflow-hidden border-r border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-6">
+    <nav className="relative flex w-[240px] shrink-0 flex-col overflow-hidden border-r border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-6">
       <div className="mb-8 px-3 text-[15px] font-semibold tracking-tight text-foreground">
         AI Command Center
       </div>
@@ -45,14 +45,14 @@ export function Sidebar({ userEmail }: { userEmail: string }) {
               key={item.href}
               href={item.href}
               className={cn(
-                "relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-150",
-                active ? "text-foreground" : "text-text-secondary hover:text-foreground",
+                "relative flex items-center gap-3 rounded-[10px] px-3 py-2 text-sm transition-colors duration-150",
+                active ? "font-semibold text-foreground" : "text-text-secondary hover:text-foreground",
               )}
             >
               {active && (
                 <motion.div
                   layoutId="sidebar-active-indicator"
-                  className="absolute inset-0 rounded-full border border-[color-mix(in_oklch,var(--primary),transparent_70%)] bg-[color-mix(in_oklch,var(--primary),transparent_88%)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
+                  className="absolute inset-0 rounded-[10px] bg-secondary before:absolute before:inset-y-1.5 before:left-0 before:w-[3px] before:rounded-full before:bg-primary"
                   transition={GLASS_SPRING}
                 />
               )}

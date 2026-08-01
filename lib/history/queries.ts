@@ -514,3 +514,71 @@ export async function getRecentRunsWithProject(userId: number, limit = 8): Promi
   );
   return rows.map((r) => ({ ...rowToRunRow(r), projectName: (r.project_name as string | null) ?? null }));
 }
+
+export interface AvgResponseTime {
+  /** null when there are zero rows with a non-null duration_ms in range -- "no data," not "0ms". */
+  avgDurationMs: number | null;
+}
+
+/**
+ * Wall-clock average from duration_ms -- NOT latency_ms, which app/api/run/route.ts
+ * never populates (always inserted as null). duration_ms is a real
+ * Date.now()-delta spanning the full provider call, recorded for every run
+ * regardless of success/error/stopped.
+ */
+export async function getAvgDurationInRange(userId: number, sinceIso: string, untilIso: string): Promise<AvgResponseTime> {
+  const row = await queryOne<{ avg_duration_ms: number | null }>(
+    `SELECT AVG(duration_ms) AS avg_duration_ms
+     FROM runs WHERE user_id = ? AND started_at >= ? AND started_at < ? AND duration_ms IS NOT NULL`,
+    [userId, sinceIso, untilIso],
+  );
+  return { avgDurationMs: row?.avg_duration_ms != null ? Number(row.avg_duration_ms) : null };
+}
+
+export interface ProviderAvgDuration {
+  provider: ProviderId;
+  avgDurationMs: number | null;
+}
+
+/** Same as getAvgDurationInRange, split per provider -- drives the dashboard provider cards' response-time line. */
+export async function getAvgDurationByProviderInRange(
+  userId: number,
+  sinceIso: string,
+  untilIso: string,
+): Promise<ProviderAvgDuration[]> {
+  const rows = await queryAll<{ provider: ProviderId; avg_duration_ms: number | null }>(
+    `SELECT provider, AVG(duration_ms) AS avg_duration_ms
+     FROM runs WHERE user_id = ? AND started_at >= ? AND started_at < ? AND duration_ms IS NOT NULL
+     GROUP BY provider`,
+    [userId, sinceIso, untilIso],
+  );
+  return rows.map((r) => ({ provider: r.provider, avgDurationMs: r.avg_duration_ms != null ? Number(r.avg_duration_ms) : null }));
+}
+
+export interface SuccessRateStats {
+  runCount: number;
+  successCount: number;
+  /** null when runCount === 0 -- "no runs to judge," not "0% success". */
+  successRate: number | null;
+}
+
+/** Bounded to [sinceIso, untilIso) -- today/yesterday pair drives a day-over-day success-rate KPI, same shape as the other *InRange functions. */
+export async function getSuccessRateInRange(userId: number, sinceIso: string, untilIso: string): Promise<SuccessRateStats> {
+  const row = await queryOne<{ run_count: number; success_count: number }>(
+    `SELECT COUNT(*) AS run_count, SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) AS success_count
+     FROM runs WHERE user_id = ? AND started_at >= ? AND started_at < ?`,
+    [userId, sinceIso, untilIso],
+  );
+  const runCount = Number(row!.run_count);
+  const successCount = Number(row!.success_count);
+  return { runCount, successCount, successRate: runCount > 0 ? successCount / runCount : null };
+}
+
+/**
+ * Alias over getDailyStats sized for a GitHub-style contribution heatmap
+ * (~26 weeks) -- same DailyStat shape, just a naming/intent marker at call
+ * sites so "heatmap data" doesn't silently mean "arbitrary day count".
+ */
+export async function getActivityHeatmapDays(userId: number, days = 182): Promise<DailyStat[]> {
+  return getDailyStats(userId, days);
+}

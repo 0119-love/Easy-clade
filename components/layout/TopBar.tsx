@@ -2,12 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { LogOut, Search } from "lucide-react";
+import { Gavel, LogOut, Play, Plus, Search, Zap } from "lucide-react";
 import { cn, emailInitials } from "@/lib/utils";
 import { PROVIDER_IDS, PROVIDER_LABELS } from "@/lib/config/types";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { useSystemStatus } from "@/lib/hooks/useSystemStatus";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -19,8 +20,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { fetchProjects } from "@/lib/projects/client";
 
-// Trimmed to exactly four controls per the design brief: Search, Workspace,
-// Connection Status, Profile. No notifications bell, no plan badge.
+// Same routes/icons as Sidebar.tsx/CommandPalette.tsx's entries for these
+// destinations, so they wear the same icon everywhere.
+const QUICK_CREATE_ITEMS = [
+  { href: "/app/run", label: "새 실행", icon: Play },
+  { href: "/committee", label: "새 Committee", icon: Gavel },
+  { href: "/automations", label: "새 자동화", icon: Zap },
+] as const;
+
+// Five controls: Search, Quick Create, Workspace, Connection Status,
+// Profile. Still no notifications bell, no plan badge -- there's no real
+// notification system behind one, and this app has no subscription tiers.
 export function TopBar({ userEmail }: { userEmail: string }) {
   const router = useRouter();
   const status = useSystemStatus();
@@ -50,6 +60,23 @@ export function TopBar({ userEmail }: { userEmail: string }) {
       </button>
 
       <div className="flex items-center gap-6">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button type="button" size="sm" variant="secondary">
+                <Plus className="size-3.5" /> 빠른 생성
+              </Button>
+            }
+          />
+          <DropdownMenuContent align="end">
+            {QUICK_CREATE_ITEMS.map((item) => (
+              <DropdownMenuItem key={item.href} onClick={() => router.push(item.href)}>
+                <item.icon className="size-4" /> {item.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <Select
           value={currentProjectId ? String(currentProjectId) : "none"}
           onValueChange={(v) => setCurrentProjectId(v === "none" ? null : Number(v))}

@@ -8,12 +8,14 @@ import { DashboardProviderCard } from "@/components/dashboard/DashboardProviderC
 import { SystemStatusCard } from "@/components/dashboard/SystemStatusCard";
 import { QuickActionsCard } from "@/components/dashboard/QuickActionsCard";
 import { TokenTrendChart } from "@/components/dashboard/TokenTrendChart";
+import { CostBreakdownChart } from "@/components/dashboard/CostBreakdownChart";
+import { ActivityHeatmap } from "@/components/dashboard/ActivityHeatmap";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { DashboardFab } from "@/components/dashboard/DashboardFab";
 import { useSystemStatus } from "@/lib/hooks/useSystemStatus";
 import { PROVIDER_IDS } from "@/lib/config/types";
 import type { ModelInfo } from "@/lib/providers/types";
-import { fetchDashboardToday, fetchDashboardTrend } from "@/lib/analytics/client";
+import { fetchActivityHeatmap, fetchAnalytics, fetchDashboardToday, fetchDashboardTrend } from "@/lib/analytics/client";
 import type { DashboardRange } from "@/lib/history/queries";
 
 const RANGE_LABELS: Record<DashboardRange, string> = {
@@ -44,14 +46,19 @@ export default function DashboardPage() {
     queryKey: ["dashboard", "trend", range],
     queryFn: () => fetchDashboardTrend(range),
   });
+  const { data: analytics, isPending: analyticsPending } = useQuery({ queryKey: ["analytics"], queryFn: fetchAnalytics });
+  const { data: heatmap, isPending: heatmapPending } = useQuery({ queryKey: ["dashboard", "heatmap"], queryFn: fetchActivityHeatmap });
 
   const cardsLoading = todayPending || modelsPending || status.isPending;
+  const tokenSparkline = (trend?.points ?? []).map((point) =>
+    PROVIDER_IDS.reduce((sum, provider) => sum + point.values[provider], 0),
+  );
 
   return (
-    <div className="space-y-8 px-10 py-10">
+    <div className="space-y-6 px-6 py-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">대시보드</h1>
+          <h1 className="text-[32px] font-bold tracking-tight text-foreground">대시보드</h1>
           <p className="text-sm text-text-secondary">오늘의 사용량과 시스템 상태를 한눈에 확인하세요.</p>
         </div>
         <Tabs value={range} onValueChange={(v) => setRange(v as DashboardRange)}>
@@ -77,6 +84,7 @@ export default function DashboardPage() {
               keyStatus={status.data?.providers[provider]}
               todayTokens={stat?.todayTokens ?? 0}
               todayRunCount={stat?.todayRunCount ?? 0}
+              avgDurationMs={stat?.avgDurationMs ?? null}
               sparklineData={sparklineData}
               isLoading={cardsLoading}
             />
@@ -85,13 +93,23 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <SystemStatusCard totals={today?.totals} isLoading={todayPending} />
+        <SystemStatusCard totals={today?.totals} tokenSparkline={tokenSparkline} isLoading={todayPending} />
         <QuickActionsCard />
       </div>
 
       <Card className="p-6">
         <h2 className="mb-4 text-sm font-semibold text-foreground">토큰 사용량 추이</h2>
         <TokenTrendChart points={trend?.points ?? []} isLoading={trendPending} />
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="mb-4 text-sm font-semibold text-foreground">프로바이더별 비용</h2>
+        <CostBreakdownChart data={analytics?.providers ?? []} isLoading={analyticsPending} />
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="mb-4 text-sm font-semibold text-foreground">활동 히트맵</h2>
+        <ActivityHeatmap data={heatmap?.days ?? []} isLoading={heatmapPending} />
       </Card>
 
       <RecentActivityCard items={today?.recentActivity} isLoading={todayPending} />
