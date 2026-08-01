@@ -10,11 +10,10 @@ import { cn } from "@/lib/utils";
 
 interface SystemStatusCardProps {
   totals: DashboardTotals | undefined;
-  activeAgentCount: number | undefined;
   isLoading?: boolean;
 }
 
-export function SystemStatusCard({ totals, activeAgentCount, isLoading }: SystemStatusCardProps) {
+export function SystemStatusCard({ totals, isLoading }: SystemStatusCardProps) {
   const status = useSystemStatus();
   const configuredCount = status.data ? Object.values(status.data.providers).filter((p) => p.configured).length : 0;
 
@@ -28,7 +27,7 @@ export function SystemStatusCard({ totals, activeAgentCount, isLoading }: System
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div className="space-y-1">
           <div className="text-xs text-text-secondary">오늘 API 호출</div>
           {isLoading ? (
@@ -50,14 +49,6 @@ export function SystemStatusCard({ totals, activeAgentCount, isLoading }: System
               </div>
               <TrendBadge changePct={totals?.changePct ?? null} />
             </div>
-          )}
-        </div>
-        <div className="space-y-1">
-          <div className="text-xs text-text-secondary">활성 에이전트</div>
-          {isLoading ? (
-            <Skeleton className="h-6 w-10" />
-          ) : (
-            <div className="font-mono text-xl font-semibold text-foreground">{activeAgentCount ?? 0}</div>
           )}
         </div>
         <div className="space-y-1">

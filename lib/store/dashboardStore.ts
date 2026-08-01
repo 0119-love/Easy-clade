@@ -69,13 +69,6 @@ interface DashboardState {
   toggleAttachmentFileId: (id: number) => void;
   clearAttachmentFileIds: () => void;
 
-  applyPreset: (preset: {
-    provider: ProviderId;
-    model: string;
-    systemPrompt: string | null;
-    temperature: number;
-    effort: EffortLevel;
-  }) => void;
   setCardModel: (provider: ProviderId, model: string) => void;
   setCardTemperature: (provider: ProviderId, temperature: number) => void;
   setCardEffort: (provider: ProviderId, effort: EffortLevel) => void;
@@ -129,20 +122,6 @@ export const useDashboardStore = create<DashboardState>((set) => ({
         : [...state.attachmentFileIds, id],
     })),
   clearAttachmentFileIds: () => set({ attachmentFileIds: [] }),
-
-  applyPreset: (preset) =>
-    set((state) => ({
-      systemPrompt: preset.systemPrompt ?? state.systemPrompt,
-      cards: {
-        ...state.cards,
-        [preset.provider]: {
-          ...state.cards[preset.provider],
-          model: preset.model,
-          temperature: preset.temperature,
-          effort: preset.effort,
-        },
-      },
-    })),
 
   setCardModel: (provider, model) =>
     set((state) => ({ cards: { ...state.cards, [provider]: { ...state.cards[provider], model } } })),

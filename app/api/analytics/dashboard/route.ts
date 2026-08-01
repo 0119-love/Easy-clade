@@ -7,7 +7,6 @@ import {
   type RunStatus,
   type TodayStatsByProvider,
 } from "@/lib/history/queries";
-import { getAgentPresets } from "@/lib/agents/queries";
 import { PROVIDER_IDS, type ProviderId } from "@/lib/config/types";
 import { requireUserContext } from "@/lib/auth/session";
 
@@ -48,10 +47,9 @@ export async function GET(request: NextRequest) {
   const todayStartIso = localMidnightIso();
   const yesterdayStartIso = new Date(new Date(todayStartIso).getTime() - 86_400_000).toISOString();
 
-  const [todayByProvider, yesterdayByProvider, presets, recentRuns] = await Promise.all([
+  const [todayByProvider, yesterdayByProvider, recentRuns] = await Promise.all([
     getTodayStatsByProvider(auth.id, todayStartIso),
     getStatsByProviderInRange(auth.id, yesterdayStartIso, todayStartIso),
-    getAgentPresets(auth.id),
     getRecentRunsWithProject(auth.id, 8),
   ]);
 
@@ -78,5 +76,5 @@ export async function GET(request: NextRequest) {
     startedAt: r.startedAt,
   }));
 
-  return NextResponse.json({ byProvider, totals, activeAgentCount: presets.length, recentActivity });
+  return NextResponse.json({ byProvider, totals, recentActivity });
 }

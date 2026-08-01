@@ -30,7 +30,6 @@ export async function fetchUsageBuckets(granularity: UsageGranularity): Promise<
 export interface DashboardResponse {
   byProvider: DashboardProviderStat[];
   totals: DashboardTotals;
-  activeAgentCount: number;
   recentActivity: DashboardActivityItem[];
 }
 

@@ -85,7 +85,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <SystemStatusCard totals={today?.totals} activeAgentCount={today?.activeAgentCount} isLoading={todayPending} />
+        <SystemStatusCard totals={today?.totals} isLoading={todayPending} />
         <QuickActionsCard />
       </div>
 

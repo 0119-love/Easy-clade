@@ -3,17 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import {
-  BarChart3,
-  Bot,
-  BookOpen,
-  Gavel,
-  LayoutDashboard,
-  Settings,
-  Sparkles,
-  Zap,
-  type LucideIcon,
-} from "lucide-react";
+import { BarChart3, Gavel, LayoutDashboard, Settings, Zap, type LucideIcon } from "lucide-react";
 import { cn, emailInitials } from "@/lib/utils";
 import { GLASS_SPRING } from "@/components/ui/motion-presets";
 
@@ -29,9 +19,6 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: "/app", label: "대시보드", icon: LayoutDashboard },
   { href: "/committee", label: "AI Committee", icon: Gavel },
-  { href: "/models", label: "AI 모델", icon: Bot },
-  { href: "/agents", label: "에이전트", icon: Sparkles },
-  { href: "/knowledge", label: "지식", icon: BookOpen },
   { href: "/automations", label: "자동화", icon: Zap },
   { href: "/activity", label: "활동", icon: BarChart3 },
   { href: "/settings", label: "설정", icon: Settings },

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, KeyRound, Play, Sparkles, type LucideIcon } from "lucide-react";
+import { Gavel, KeyRound, Play, Zap, type LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 interface QuickAction {
@@ -12,9 +12,9 @@ interface QuickAction {
 // pages, so a given destination always wears the same icon everywhere.
 const ACTIONS: QuickAction[] = [
   { href: "/app/run", label: "실행 화면", icon: Play },
-  { href: "/agents", label: "에이전트", icon: Sparkles },
+  { href: "/committee", label: "AI Committee", icon: Gavel },
   { href: "/settings", label: "API 키", icon: KeyRound },
-  { href: "/knowledge", label: "지식", icon: BookOpen },
+  { href: "/automations", label: "자동화", icon: Zap },
 ];
 
 export function QuickActionsCard() {

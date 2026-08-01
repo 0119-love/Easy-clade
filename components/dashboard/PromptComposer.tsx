@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { BookOpen, Image as ImageIcon, Loader2, Play, X } from "lucide-react";
+import { Image as ImageIcon, Loader2, Play, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,6 @@ import { PROVIDER_IDS, type KeysStatusResponse, type ProviderId } from "@/lib/co
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { runProvider } from "@/lib/streamClient";
 import { autoRoute } from "@/lib/routing/autoRoute";
-import { fetchKnowledge } from "@/lib/knowledge/client";
 import { fetchFiles, fileUrl, isImageMime } from "@/lib/files/client";
 
 interface PromptComposerProps {
@@ -47,7 +46,6 @@ export function PromptComposer({ keysStatus, activeProviders }: PromptComposerPr
   const toggleAttachmentFileId = useDashboardStore((s) => s.toggleAttachmentFileId);
 
   const [routeReason, setRouteReason] = useState<string | null>(null);
-  const { data: knowledgeData } = useQuery({ queryKey: ["knowledge", ""], queryFn: () => fetchKnowledge() });
   const { data: filesData } = useQuery({ queryKey: ["files"], queryFn: fetchFiles });
   const imageFiles = useMemo(() => filesData?.files.filter((f) => isImageMime(f.mimeType)) ?? [], [filesData]);
   const attachedFiles = useMemo(
@@ -160,30 +158,9 @@ export function PromptComposer({ keysStatus, activeProviders }: PromptComposerPr
           <AccordionContent>
             <div className="grid gap-3 pt-3 sm:grid-cols-[1fr_140px]">
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="system-prompt" className="text-xs text-text-secondary">
-                    시스템 프롬프트
-                  </Label>
-                  {knowledgeData && knowledgeData.items.length > 0 && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger className="flex items-center gap-1 text-xs text-text-secondary outline-none hover:text-foreground">
-                        <BookOpen className="size-3" /> 지식 첨부
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-64">
-                        {knowledgeData.items.map((item) => (
-                          <DropdownMenuItem
-                            key={item.id}
-                            onClick={() =>
-                              setSystemPrompt(systemPrompt ? `${systemPrompt}\n\n${item.content}` : item.content)
-                            }
-                          >
-                            {item.title}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </div>
+                <Label htmlFor="system-prompt" className="text-xs text-text-secondary">
+                  시스템 프롬프트
+                </Label>
                 <Input
                   id="system-prompt"
                   value={systemPrompt}

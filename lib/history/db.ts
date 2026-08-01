@@ -79,26 +79,6 @@ const SCHEMA_STATEMENTS = [
     pinned INTEGER NOT NULL DEFAULT 1,
     created_at TEXT NOT NULL
   )`,
-  `CREATE TABLE IF NOT EXISTS knowledge_items (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id),
-    title TEXT NOT NULL,
-    content TEXT NOT NULL,
-    created_at TEXT NOT NULL
-  )`,
-  `CREATE TABLE IF NOT EXISTS agent_presets (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id),
-    name TEXT NOT NULL,
-    provider TEXT NOT NULL,
-    model TEXT NOT NULL,
-    system_prompt TEXT,
-    temperature DOUBLE PRECISION NOT NULL DEFAULT 1,
-    effort TEXT NOT NULL DEFAULT 'medium',
-    description TEXT,
-    category TEXT NOT NULL DEFAULT 'custom',
-    created_at TEXT NOT NULL
-  )`,
   `CREATE TABLE IF NOT EXISTS workflows (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id),
