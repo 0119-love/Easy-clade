@@ -159,7 +159,6 @@
 /*
  * Stripe/Linear-style flat palette -- light theme.
  */
-:root,
 .light {
   --background: #f8fafc;
   --foreground: #111827;
