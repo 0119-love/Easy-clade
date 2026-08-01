@@ -1,14 +1,15 @@
 "use client";
 
-import { Suspense, useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link2, Link2Off, Play, Square } from "lucide-react";
+import { Link2, Link2Off, Play, Square, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { PROVIDER_IDS, type KeysStatusResponse, type ProviderId } from "@/lib/config/types";
 import type { ModelInfo } from "@/lib/providers/types";
 import { PromptComposer } from "@/components/dashboard/PromptComposer";
-import { ModelCard } from "@/components/dashboard/ModelCard";
+import { ProviderConsoleCard } from "@/components/dashboard/ProviderConsoleCard";
+import { ProviderEmptyState } from "@/components/dashboard/ProviderEmptyState";
 import { ResponseColumn } from "@/components/dashboard/ResponseColumn";
 import { RightIntelligencePanel } from "@/components/dashboard/RightIntelligencePanel";
 import { ProviderOnboardingModal } from "@/components/dashboard/ProviderOnboardingModal";
@@ -16,6 +17,7 @@ import { ProviderDeepLinkScroller } from "@/components/dashboard/ProviderDeepLin
 import { useDashboardStore } from "@/lib/store/dashboardStore";
 import { runProvider, stopProvider } from "@/lib/streamClient";
 import { fetchPreferences, savePreferencesRemote } from "@/lib/preferences/client";
+import { fetchDashboardToday } from "@/lib/analytics/client";
 
 // Tailwind needs static class names to see them at build time -- can't
 // interpolate `lg:grid-cols-${n}`.
@@ -54,6 +56,7 @@ export default function RunConsolePage() {
     queryKey: ["settings", "keys"],
     queryFn: fetchKeysStatus,
   });
+  const { data: today } = useQuery({ queryKey: ["dashboard", "today"], queryFn: fetchDashboardToday });
   const consensus = useDashboardStore((s) => s.consensus);
   const cards = useDashboardStore((s) => s.cards);
   const userPrompt = useDashboardStore((s) => s.userPrompt);
@@ -67,8 +70,9 @@ export default function RunConsolePage() {
   const currentProjectId = useDashboardStore((s) => s.currentProjectId);
   const attachmentFileIds = useDashboardStore((s) => s.attachmentFileIds);
 
-  const { data: preferences } = useQuery({ queryKey: ["preferences"], queryFn: fetchPreferences });
+  const { data: preferences, isPending: preferencesPending } = useQuery({ queryKey: ["preferences"], queryFn: fetchPreferences });
   const appliedDefaults = useRef(false);
+  const [manageProvidersOpen, setManageProvidersOpen] = useState(false);
 
   useEffect(() => {
     if (!preferences || appliedDefaults.current) return;
@@ -81,17 +85,21 @@ export default function RunConsolePage() {
     }
   }, [preferences, setSyncScroll, setShowThinking, setCardTemperature, setCardEffort]);
 
-  const activeProviders = preferences?.activeProviders ?? PROVIDER_IDS;
+  const activeProviders = preferences?.activeProviders ?? [];
   const useScrollRow = activeProviders.length > SCROLL_ROW_THRESHOLD;
   const gridColsClass = GRID_COLS_BY_COUNT[activeProviders.length] ?? GRID_COLS_BY_COUNT[SCROLL_ROW_THRESHOLD];
   const configuredProviders = activeProviders.filter((id) => keysStatus?.providers[id]?.configured);
   const anyRunning = PROVIDER_IDS.some((id) => cards[id].status === "running");
   const canRun = userPrompt.trim().length > 0 && configuredProviders.length > 0 && !anyRunning;
 
+  const isFirstRun = !!preferences && !preferences.providersOnboarded;
+  const onboardingOpen = isFirstRun || manageProvidersOpen;
+
   async function handleProviderOnboardingComplete(selected: ProviderId[]) {
     if (!preferences) return;
     await savePreferencesRemote({ ...preferences, activeProviders: selected, providersOnboarded: true });
     void queryClient.invalidateQueries({ queryKey: ["preferences"] });
+    setManageProvidersOpen(false);
   }
 
   function runAll() {
@@ -132,6 +140,16 @@ export default function RunConsolePage() {
             <Tooltip>
               <TooltipTrigger
                 render={
+                  <Button type="button" size="icon-sm" variant="ghost" onClick={() => setManageProvidersOpen(true)} aria-label="프로바이더 관리">
+                    <Users className="size-4" />
+                  </Button>
+                }
+              />
+              <TooltipContent>프로바이더 관리</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger
+                render={
                   <Button
                     type="button"
                     size="icon-sm"
@@ -159,37 +177,51 @@ export default function RunConsolePage() {
           </div>
         </div>
 
-        {/* Model cards always wrap into rows instead of scrolling sideways --
-            users need to compare every active provider's settings at a glance. */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 2xl:grid-cols-6">
-          {activeProviders.map((provider) => (
-            <div key={provider} id={`model-card-${provider}`} className="scroll-mt-6">
-              <ModelCard
-                provider={provider}
-                models={modelsData?.models[provider] ?? []}
-                keyStatus={keysStatus?.providers[provider]}
-                isLoading={modelsPending || keysPending}
-              />
-            </div>
-          ))}
-        </div>
-
-        <PromptComposer keysStatus={keysStatus} activeProviders={activeProviders} />
-
-        {useScrollRow ? (
-          <div className="scroll-fade-x -mx-1 flex gap-6 overflow-x-auto px-1 pb-2">
-            {activeProviders.map((provider) => (
-              <div key={provider} className="w-96 shrink-0">
-                <ResponseColumn provider={provider} />
-              </div>
-            ))}
-          </div>
+        {activeProviders.length === 0 && !keysPending && !preferencesPending ? (
+          <ProviderEmptyState onChooseProviders={() => setManageProvidersOpen(true)} />
         ) : (
-          <div className={`grid grid-cols-1 gap-6 ${gridColsClass}`}>
-            {activeProviders.map((provider) => (
-              <ResponseColumn key={provider} provider={provider} />
-            ))}
-          </div>
+          <>
+            {/* Provider cards always wrap into rows instead of scrolling
+                sideways -- only active providers render here, and each one
+                stays compact so several fit on screen at once. */}
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 2xl:grid-cols-6">
+              {activeProviders.map((provider) => {
+                const stat = today?.byProvider.find((p) => p.provider === provider);
+                return (
+                  <div key={provider} id={`model-card-${provider}`} className="scroll-mt-6">
+                    <ProviderConsoleCard
+                      provider={provider}
+                      models={modelsData?.models[provider] ?? []}
+                      keyStatus={keysStatus?.providers[provider]}
+                      todayTokens={stat?.todayTokens ?? 0}
+                      avgLatencyMs={stat?.avgDurationMs ?? null}
+                      isLoading={modelsPending || keysPending}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
+            <PromptComposer keysStatus={keysStatus} activeProviders={activeProviders} />
+
+            {useScrollRow ? (
+              <div className="scroll-fade-x -mx-1 flex gap-6 overflow-x-auto px-1 pb-2">
+                {activeProviders.map((provider) => (
+                  <div key={provider} id={`response-${provider}`} className="w-96 shrink-0 scroll-mt-6">
+                    <ResponseColumn provider={provider} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className={`grid grid-cols-1 gap-6 ${gridColsClass}`}>
+                {activeProviders.map((provider) => (
+                  <div key={provider} id={`response-${provider}`} className="scroll-mt-6">
+                    <ResponseColumn provider={provider} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         {consensus.status !== "idle" && (
@@ -209,8 +241,11 @@ export default function RunConsolePage() {
       <RightIntelligencePanel />
 
       <ProviderOnboardingModal
-        open={!!preferences && !preferences.providersOnboarded}
+        open={onboardingOpen}
+        keysStatus={keysStatus}
+        initialSelected={activeProviders.filter((id) => keysStatus?.providers[id]?.configured)}
         onComplete={(selected) => void handleProviderOnboardingComplete(selected)}
+        onOpenChange={isFirstRun ? undefined : setManageProvidersOpen}
       />
     </div>
   );
