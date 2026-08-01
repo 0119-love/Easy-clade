@@ -15,6 +15,9 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAuthPage = AUTH_PAGES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
   const isLandingPage = pathname === "/";
+  // Standalone showcase pages with no account data behind them -- meant to be
+  // shared as a plain link, so they skip the login gate entirely.
+  const isDemoPage = pathname === "/demo" || pathname.startsWith("/demo/");
   // "/" is public (reachable with no session) same as the auth pages, but
   // deliberately NOT in the "bounce away if a session cookie exists" branch
   // below like they are. This check is a presence check, not a validity
@@ -26,7 +29,7 @@ export function proxy(request: NextRequest) {
   // genuinely logged-in visitor seeing the pitch once more on "/" is a much
   // smaller cost than the landing page silently not working for anyone with
   // cookie debris.
-  const isPublicPage = isLandingPage || isAuthPage;
+  const isPublicPage = isLandingPage || isAuthPage || isDemoPage;
   const hasSession = request.cookies.has(SESSION_COOKIE);
 
   if (!isPublicPage && !hasSession) {
