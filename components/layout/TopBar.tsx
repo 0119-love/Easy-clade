@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { fetchProjects } from "@/lib/projects/client";
+import { ThemeToggleButton } from "@/components/layout/ThemeToggleButton";
 
 // Same routes/icons as Sidebar.tsx/CommandPalette.tsx's entries for these
 // destinations, so they wear the same icon everywhere.
@@ -28,9 +29,9 @@ const QUICK_CREATE_ITEMS = [
   { href: "/automations", label: "새 자동화", icon: Zap },
 ] as const;
 
-// Five controls: Search, Quick Create, Workspace, Connection Status,
-// Profile. Still no notifications bell, no plan badge -- there's no real
-// notification system behind one, and this app has no subscription tiers.
+// Six controls: Search, Quick Create, Workspace, Connection Status, Theme
+// Toggle, Profile. Still no notifications bell, no plan badge -- there's no
+// real notification system behind one, and this app has no subscription tiers.
 export function TopBar({ userEmail }: { userEmail: string }) {
   const router = useRouter();
   const status = useSystemStatus();
@@ -125,6 +126,8 @@ export function TopBar({ userEmail }: { userEmail: string }) {
             </TooltipContent>
           </Tooltip>
         )}
+
+        <ThemeToggleButton />
 
         <DropdownMenu>
           <DropdownMenuTrigger
