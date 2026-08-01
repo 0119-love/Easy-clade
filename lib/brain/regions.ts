@@ -33,3 +33,24 @@ export const BRAIN_REGIONS: BrainRegionMeta[] = [
   { id: "runs", label: "EXECUTIVE", description: "모델 실행 엔진", color: "#9085e9" },
   { id: "integrations", label: "INTEGRATIONS", description: "외부 연동", color: "#e66767" },
 ];
+
+/**
+ * Status is a separate channel from region identity above -- never reuse a
+ * categorical region hue for status, and never let a 9th "region" borrow a
+ * status color (dataviz skill: status colors are reserved, never series
+ * identity). Reuses this app's existing --success/--warning/--danger tokens
+ * (see app/globals.css) rather than a second parallel palette.
+ */
+export type BrainNodeStatus = "running" | "idle" | "error";
+
+export const STATUS_COLOR: Record<BrainNodeStatus, string> = {
+  running: "#f59e0b", // busy/active -- matches --warning
+  idle: "#10b981", // healthy baseline -- matches --success
+  error: "#f87171", // matches --danger
+};
+
+export const STATUS_LABEL: Record<BrainNodeStatus, string> = {
+  running: "작업중",
+  idle: "정상",
+  error: "오류",
+};

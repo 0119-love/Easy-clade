@@ -1,16 +1,11 @@
-import type { BrainRegionSnapshot } from "./queries";
+import type { BrainStatusResponse } from "./queries";
 import type { BrainGraphSnapshot } from "./graph";
 
-export type { BrainRegionSnapshot, BrainGraphSnapshot };
+export type { BrainStatusResponse, BrainGraphSnapshot };
 
-export interface BrainSnapshotResponse {
-  regions: BrainRegionSnapshot[];
-  generatedAt: string;
-}
-
-export async function fetchBrainSnapshot(): Promise<BrainSnapshotResponse> {
+export async function fetchBrainStatus(): Promise<BrainStatusResponse> {
   const res = await fetch("/api/brain");
-  if (!res.ok) throw new Error("브레인 스냅샷을 불러오지 못했습니다.");
+  if (!res.ok) throw new Error("브레인 상태를 불러오지 못했습니다.");
   return res.json();
 }
 
