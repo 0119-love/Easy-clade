@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { SESSION_COOKIE } from "@/lib/auth/session";
 
-const AUTH_PAGES = ["/login", "/signup", "/forgot-password", "/reset-password"];
+const AUTH_PAGES = ["/login", "/signup", "/forgot-password", "/reset-password", "/verify-email"];
 
 /**
  * Optimistic gate only (cookie presence, no DB hit) -- the Next.js auth guide
