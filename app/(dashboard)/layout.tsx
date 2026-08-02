@@ -3,6 +3,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import { CommandPalette } from "@/components/dashboard/CommandPalette";
 import { AutomationRunner } from "@/components/dashboard/AutomationRunner";
+import { DashboardPrefetch } from "@/components/dashboard/DashboardPrefetch";
 import { getSessionUser } from "@/lib/auth/session";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -21,6 +22,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </div>
       <CommandPalette />
       <AutomationRunner />
+      <DashboardPrefetch />
     </div>
   );
 }
