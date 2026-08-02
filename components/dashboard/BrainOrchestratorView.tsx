@@ -19,9 +19,6 @@ import {
   Layers,
   ArrowRight,
   Lock,
-  Info,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -79,7 +76,6 @@ export function BrainOrchestratorView() {
   const [result, setResult] = useState<OrchestrationResult | null>(null);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("final");
-  const [showExplanation, setShowExplanation] = useState(false);
 
   // Selected providers state
   const [selectedProviders, setSelectedProviders] = useState<ProviderId[]>([]);
@@ -100,7 +96,6 @@ export function BrainOrchestratorView() {
   useEffect(() => {
     if (keysData?.providers) {
       const configuredIds = ALL_PROVIDERS.map((p) => p.id).filter((id) => keysData.providers[id]?.configured);
-      // If none configured, default to openai/google for demo capability
       if (configuredIds.length > 0) {
         setSelectedProviders(configuredIds);
       } else {
@@ -175,40 +170,6 @@ export function BrainOrchestratorView() {
 
   return (
     <div className="space-y-6">
-      {/* Explanation Banner / Toggle */}
-      <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-4 text-xs text-indigo-300">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Info className="size-4 text-indigo-400 shrink-0" />
-            <span className="font-bold text-indigo-200">
-              💡 &apos;AI 모델 라우팅 & 패킷 조합&apos;이란 무엇인가요?
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowExplanation((p) => !p)}
-            className="flex items-center gap-1 text-[11px] font-semibold text-indigo-400 hover:text-indigo-200"
-          >
-            {showExplanation ? "접기" : "원리 설명 보기"}
-            {showExplanation ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
-          </button>
-        </div>
-
-        {showExplanation && (
-          <div className="mt-3 space-y-2 text-[11.5px] leading-relaxed border-t border-indigo-500/20 pt-3 text-indigo-200/90">
-            <p>
-              <strong>1. 지능형 라우팅 (Smart Routing):</strong> 사용자가 프롬프트를 제출하면, 라우터가 프롬프트의 복잡도(코드, 수학, 일반 텍스트, 요약 등)를 실시간 분석합니다.
-            </p>
-            <p>
-              <strong>2. 선택된 AI 필터링 & 패킷 분사:</strong> 사용자가 아래에서 <strong>직접 선택(클릭)한 활성화된 AI 모델들</strong>에게만 프롬프트 패킷을 백그라운드에서 동시에 발사(Multi-thread Query)합니다.
-            </p>
-            <p>
-              <strong>3. 교차 검증 & 합성 (Consensus & Synthesis):</strong> 수신된 여러 AI의 응답을 정밀 분석하여 중복이나 오류를 보정하고, 가장 완벽한 종합 대답을 만들어내거나 최저 비용 모델을 추천합니다.
-            </p>
-          </div>
-        )}
-      </div>
-
       {/* 6 AI Provider Selector Grid (Key Configured Check) */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
@@ -565,6 +526,22 @@ export function BrainOrchestratorView() {
           </div>
         </div>
       )}
+
+      {/* Footnote Explanation Section (Apple-style footer documentation) */}
+      <footer className="mt-16 border-t border-border/40 pt-6 pb-8 space-y-2 text-[11px] text-text-secondary/70 leading-relaxed font-sans">
+        <p>
+          1. <strong>1단계 - 프롬프트 정밀 분석 (Prompt Analysis):</strong> 입력받은 질문의 토큰 크기, 난이도, 특정 목적(코드 최적화, 수학, 일반 문서, 요약 등)을 실시간으로 분석합니다.
+        </p>
+        <p>
+          2. <strong>2단계 - 선택된 AI 필터링 (Provider Filtering):</strong> 사용자가 직접 클릭하여 활성화한 AI 모델들(API 키가 저장된 모델)만을 라우팅 후보군으로 필터링합니다.
+        </p>
+        <p>
+          3. <strong>3단계 - 멀티 스레드 병렬 질의 (Multi-thread Query):</strong> 선택된 AI 모델들에 비동기 병렬(Parallel Stream) 방식으로 동시에 질문 패킷을 전송합니다.
+        </p>
+        <p>
+          4. <strong>4단계 - 결과 교차 검증 & 합성 (Consensus & Synthesis):</strong> 돌아온 각 AI의 답변을 교차 비교하여 중복을 제거하고, 오류 없는 최선의 합성 답변 및 토큰/비용 절감 리포트를 완성합니다.
+        </p>
+      </footer>
     </div>
   );
 }
