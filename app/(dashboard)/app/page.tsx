@@ -6,7 +6,6 @@ import { Card } from "@/components/ui/card";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { DashboardProviderCard } from "@/components/dashboard/DashboardProviderCard";
 import { SystemStatusCard } from "@/components/dashboard/SystemStatusCard";
-import { QuickActionsCard } from "@/components/dashboard/QuickActionsCard";
 import { TokenTrendChart } from "@/components/dashboard/TokenTrendChart";
 import { CostBreakdownChart } from "@/components/dashboard/CostBreakdownChart";
 import { ActivityHeatmap } from "@/components/dashboard/ActivityHeatmap";
@@ -78,15 +77,12 @@ export default function DashboardPage() {
         })}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <SystemStatusCard
-          totals={today?.totals}
-          tokenSparkline={tokenSparkline}
-          lastUpdatedAt={todayUpdatedAt}
-          isLoading={todayPending}
-        />
-        <QuickActionsCard />
-      </div>
+      <SystemStatusCard
+        totals={today?.totals}
+        tokenSparkline={tokenSparkline}
+        lastUpdatedAt={todayUpdatedAt}
+        isLoading={todayPending}
+      />
 
       <Card className="p-6">
         <h2 className="mb-4 text-sm font-semibold text-foreground">토큰 사용량 추이</h2>
