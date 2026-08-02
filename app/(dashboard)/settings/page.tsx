@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ExternalLink } from "lucide-react";
@@ -18,6 +18,7 @@ import {
   type ProviderId,
 } from "@/lib/config/types";
 import { extractApiKey } from "@/lib/config/keyPatterns";
+import { fetchCurrentUser, updateDisplayName } from "@/lib/auth/client";
 
 async function fetchKeysStatus(): Promise<KeysStatusResponse> {
   const res = await fetch("/api/settings/keys");
@@ -176,6 +177,61 @@ function ProviderKeyRow({ provider, status, onSaved, isLoading }: ProviderKeyRow
   );
 }
 
+function ProfileCard() {
+  const queryClient = useQueryClient();
+  const { data: me, isPending } = useQuery({ queryKey: ["auth", "me"], queryFn: fetchCurrentUser });
+  const [name, setName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const didInitName = useRef(false);
+
+  useEffect(() => {
+    if (me && !didInitName.current) {
+      setName(me.displayName ?? "");
+      didInitName.current = true;
+    }
+  }, [me]);
+
+  async function save() {
+    setSaving(true);
+    try {
+      await updateDisplayName(name.trim());
+      await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      toast.success("프로필이 저장되었습니다.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "저장에 실패했습니다.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Card className="space-y-3 p-6">
+      <div>
+        <h2 className="text-sm font-semibold text-foreground">프로필</h2>
+        <p className="text-xs text-text-secondary">
+          대시보드 인사말 등에 표시되는 이름입니다. 비워두면 이메일 아이디로 표시됩니다.
+        </p>
+      </div>
+      <div className="flex gap-2">
+        {isPending ? (
+          <Skeleton className="h-9 flex-1" />
+        ) : (
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={me?.email ? me.email.split("@")[0] : "표시 이름"}
+            maxLength={60}
+          />
+        )}
+        <Button type="button" size="sm" onClick={save} disabled={saving || isPending}>
+          저장
+        </Button>
+      </div>
+      <p className="text-xs text-text-secondary">이메일: {me?.email ?? "..."}</p>
+    </Card>
+  );
+}
+
 interface DailyBudgetFormProps {
   dailyBudget: KeysStatusResponse["dailyBudget"] | undefined;
   onSaved: () => void;
@@ -260,12 +316,20 @@ export default function SettingsPage() {
   return (
     <div className="max-w-2xl space-y-8 px-10 py-10">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">API 키</h1>
-        <p className="text-sm text-text-secondary">
-          암호화되어 서버 데이터베이스에 저장됩니다. 각 프로바이더로 보내는 것 외에는 어디로도 전송되지 않습니다.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">설정</h1>
       </div>
+
       <div className="space-y-4">
+        <ProfileCard />
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-sm font-semibold text-foreground">API 키</h2>
+          <p className="text-sm text-text-secondary">
+            암호화되어 서버 데이터베이스에 저장됩니다. 각 프로바이더로 보내는 것 외에는 어디로도 전송되지 않습니다.
+          </p>
+        </div>
         {PROVIDER_IDS.map((provider) => (
           <ProviderKeyRow
             key={provider}
@@ -276,6 +340,7 @@ export default function SettingsPage() {
           />
         ))}
       </div>
+
       <DailyBudgetForm dailyBudget={keysStatus?.dailyBudget} onSaved={refresh} />
     </div>
   );

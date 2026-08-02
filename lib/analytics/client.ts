@@ -3,6 +3,7 @@ import type { ProviderTrend } from "@/app/api/analytics/route";
 import type { DashboardActivityItem, DashboardProviderStat, DashboardTotals } from "@/app/api/analytics/dashboard/route";
 import type { DashboardTrendPoint } from "@/app/api/analytics/dashboard/trend/route";
 import type { HeatmapResponse } from "@/app/api/analytics/heatmap/route";
+import type { WeeklyInsight } from "@/lib/history/queries";
 
 export interface AnalyticsResponse {
   daily: DailyStat[];
@@ -54,5 +55,11 @@ export async function fetchDashboardTrend(range: DashboardRange): Promise<Dashbo
 export async function fetchActivityHeatmap(): Promise<HeatmapResponse> {
   const res = await fetch("/api/analytics/heatmap");
   if (!res.ok) throw new Error("활동 히트맵 데이터를 불러오지 못했습니다.");
+  return res.json();
+}
+
+export async function fetchWeeklyInsight(): Promise<WeeklyInsight> {
+  const res = await fetch("/api/analytics/insight");
+  if (!res.ok) throw new Error("주간 인사이트를 불러오지 못했습니다.");
   return res.json();
 }

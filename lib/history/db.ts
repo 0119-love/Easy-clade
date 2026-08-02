@@ -17,6 +17,9 @@ const SCHEMA_STATEMENTS = [
   // nullable so `createOAuthUser` (lib/auth/queries.ts) can leave it unset
   // instead of inventing a fake hash nobody could ever log in with anyway.
   `ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL`,
+  // Optional, user-set display name for the dashboard greeting/profile --
+  // null falls back to the email local-part in the UI.
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name TEXT`,
   `CREATE TABLE IF NOT EXISTS projects (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id),

@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
+import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { DashboardProviderCard } from "@/components/dashboard/DashboardProviderCard";
 import { SystemStatusCard } from "@/components/dashboard/SystemStatusCard";
 import { QuickActionsCard } from "@/components/dashboard/QuickActionsCard";
@@ -9,6 +10,7 @@ import { TokenTrendChart } from "@/components/dashboard/TokenTrendChart";
 import { CostBreakdownChart } from "@/components/dashboard/CostBreakdownChart";
 import { ActivityHeatmap } from "@/components/dashboard/ActivityHeatmap";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
+import { WeeklyInsightBanner } from "@/components/dashboard/WeeklyInsightBanner";
 import { DashboardFab } from "@/components/dashboard/DashboardFab";
 import { useSystemStatus } from "@/lib/hooks/useSystemStatus";
 import { PROVIDER_IDS } from "@/lib/config/types";
@@ -49,10 +51,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 px-6 py-6">
-      <div>
-        <h1 className="text-[32px] font-bold tracking-tight text-foreground">대시보드</h1>
-        <p className="text-sm text-text-secondary">오늘의 사용량과 시스템 상태를 한눈에 확인하세요.</p>
-      </div>
+      <DashboardHero />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
         {PROVIDER_IDS.map((provider) => {
@@ -95,6 +94,8 @@ export default function DashboardPage() {
       </Card>
 
       <RecentActivityCard items={today?.recentActivity} isLoading={todayPending} />
+
+      <WeeklyInsightBanner />
 
       <DashboardFab />
     </div>

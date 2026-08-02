@@ -8,6 +8,8 @@ export interface UserRow {
   passwordHash: string | null;
   emailVerified: boolean;
   createdAt: string;
+  // Optional, user-set name for the dashboard greeting/profile -- null falls back to the email local-part in the UI.
+  displayName: string | null;
 }
 
 function toUser(row: Record<string, unknown>): UserRow {
@@ -17,6 +19,7 @@ function toUser(row: Record<string, unknown>): UserRow {
     passwordHash: (row.password_hash as string | null) ?? null,
     emailVerified: Boolean(row.email_verified),
     createdAt: row.created_at as string,
+    displayName: (row.display_name as string | null) ?? null,
   };
 }
 
@@ -43,6 +46,7 @@ export async function createUser(email: string, passwordHash: string): Promise<U
     passwordHash,
     emailVerified: false, // matches the users.email_verified column's default -- see lib/history/db.ts
     createdAt,
+    displayName: null,
   };
 }
 
@@ -109,6 +113,7 @@ export async function createOAuthUser(email: string, provider: string, providerU
     passwordHash: null,
     emailVerified: true,
     createdAt,
+    displayName: null,
   };
 }
 
@@ -217,6 +222,10 @@ export async function verifyAndConsumePasswordResetCode(userId: number, code: st
 
 export async function updateUserPassword(userId: number, passwordHash: string): Promise<void> {
   await execute("UPDATE users SET password_hash = ? WHERE id = ?", [passwordHash, userId]);
+}
+
+export async function updateUserDisplayName(userId: number, displayName: string | null): Promise<void> {
+  await execute("UPDATE users SET display_name = ? WHERE id = ?", [displayName, userId]);
 }
 
 const VERIFY_CODE_TTL_MS = 10 * 60 * 1000; // 10 minutes, same as password reset codes

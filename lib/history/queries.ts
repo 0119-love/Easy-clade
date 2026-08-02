@@ -225,6 +225,46 @@ export async function getStatsByProviderInRange(
   return rows.map((r) => ({ provider: r.provider, tokens: Number(r.tokens), runCount: Number(r.run_count) }));
 }
 
+export interface WeeklyInsight {
+  thisWeekTokens: number;
+  lastWeekTokens: number;
+  /** null when lastWeekTokens is 0 -- no baseline to compare against, not the same as 0% change. */
+  changePct: number | null;
+  /** Provider with the most tokens in the last 7 days, or null if there were no runs this week. */
+  topProvider: ProviderId | null;
+  topProviderTokens: number;
+  /** false only when both windows have zero runs -- a brand-new or idle account. */
+  hasAnyData: boolean;
+}
+
+/** Rolling 7-day windows (last 7 days vs. the 7 days before that), same "relative to now" convention as the dashboard route's today/yesterday split -- not calendar weeks. */
+export async function getWeeklyInsight(userId: number): Promise<WeeklyInsight> {
+  const nowIso = new Date().toISOString();
+  const sevenDaysAgoIso = new Date(Date.now() - 7 * 86_400_000).toISOString();
+  const fourteenDaysAgoIso = new Date(Date.now() - 14 * 86_400_000).toISOString();
+
+  const [thisWeek, lastWeek] = await Promise.all([
+    getStatsByProviderInRange(userId, sevenDaysAgoIso, nowIso),
+    getStatsByProviderInRange(userId, fourteenDaysAgoIso, sevenDaysAgoIso),
+  ]);
+
+  const thisWeekTokens = thisWeek.reduce((sum, p) => sum + p.tokens, 0);
+  const lastWeekTokens = lastWeek.reduce((sum, p) => sum + p.tokens, 0);
+  const topProvider = thisWeek.reduce<TodayStatsByProvider | null>(
+    (top, p) => (top === null || p.tokens > top.tokens ? p : top),
+    null,
+  );
+
+  return {
+    thisWeekTokens,
+    lastWeekTokens,
+    changePct: lastWeekTokens > 0 ? ((thisWeekTokens - lastWeekTokens) / lastWeekTokens) * 100 : null,
+    topProvider: topProvider?.provider ?? null,
+    topProviderTokens: topProvider?.tokens ?? 0,
+    hasAnyData: thisWeekTokens > 0 || lastWeekTokens > 0,
+  };
+}
+
 export interface DailyStat {
   date: string;
   tokens: number;
