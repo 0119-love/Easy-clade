@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { clearKey, getMaskedKeys, saveDailyBudget, saveKey } from "@/lib/config/keysStore";
+import { clearKey, getMaskedKeys, saveDailyBudget, saveKey, saveProviderTokenLimit } from "@/lib/config/keysStore";
 import { requireUserContext } from "@/lib/auth/session";
 import { PROVIDER_IDS, type DailyBudget, type ProviderId } from "@/lib/config/types";
 
@@ -16,6 +16,8 @@ interface PostBody {
   apiKey?: string;
   clear?: boolean;
   dailyBudget?: DailyBudget;
+  /** null clears this provider's limit. Only meaningful together with `provider`. */
+  tokenLimit?: number | null;
 }
 
 export async function POST(request: NextRequest) {
@@ -32,6 +34,11 @@ export async function POST(request: NextRequest) {
 
     if (!body.provider || !PROVIDER_IDS.includes(body.provider)) {
       return NextResponse.json({ error: "잘못된 프로바이더입니다." }, { status: 400 });
+    }
+
+    if (body.tokenLimit !== undefined) {
+      await saveProviderTokenLimit(auth.id, body.provider, body.tokenLimit);
+      return NextResponse.json(await getMaskedKeys(auth.id));
     }
 
     if (body.clear) {

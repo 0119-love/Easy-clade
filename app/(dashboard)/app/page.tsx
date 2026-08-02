@@ -33,7 +33,11 @@ export default function DashboardPage() {
   const status = useSystemStatus();
   const [trendRange, setTrendRange] = useState<DashboardRange>("daily");
   const { data: modelsData, isPending: modelsPending } = useQuery({ queryKey: ["models"], queryFn: fetchModels });
-  const { data: today, isPending: todayPending } = useQuery({
+  const {
+    data: today,
+    isPending: todayPending,
+    dataUpdatedAt: todayUpdatedAt,
+  } = useQuery({
     queryKey: ["dashboard", "today"],
     queryFn: fetchDashboardToday,
   });
@@ -67,6 +71,7 @@ export default function DashboardPage() {
               todayRunCount={stat?.todayRunCount ?? 0}
               avgDurationMs={stat?.avgDurationMs ?? null}
               sparklineData={sparklineData}
+              tokenLimit={status.data?.providerTokenLimits[provider]}
               isLoading={cardsLoading}
             />
           );
@@ -74,7 +79,12 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <SystemStatusCard totals={today?.totals} tokenSparkline={tokenSparkline} isLoading={todayPending} />
+        <SystemStatusCard
+          totals={today?.totals}
+          tokenSparkline={tokenSparkline}
+          lastUpdatedAt={todayUpdatedAt}
+          isLoading={todayPending}
+        />
         <QuickActionsCard />
       </div>
 

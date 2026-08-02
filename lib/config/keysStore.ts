@@ -8,6 +8,7 @@ import {
   type ProviderAuthType,
   type ProviderId,
   type ProviderKeyStatus,
+  type ProviderTokenLimits,
 } from "./types";
 
 /** Bearer credentials from the Chrome extension's OAuth connect flow (see lib/auth/anthropicOAuth.ts). */
@@ -32,6 +33,7 @@ interface ConfigFile {
   version: 1;
   providers: Record<ProviderId, StoredProviderEntry>;
   dailyBudget: DailyBudget;
+  providerTokenLimits: ProviderTokenLimits;
   preferences: Preferences;
 }
 
@@ -70,6 +72,7 @@ function emptyConfig(): ConfigFile {
       StoredProviderEntry
     >,
     dailyBudget: { tokens: null, costUsd: null },
+    providerTokenLimits: {},
     preferences: emptyPreferences(),
   };
 }
@@ -121,6 +124,7 @@ async function readConfig(userId: number): Promise<ConfigFile> {
     version: 1,
     providers,
     dailyBudget: parsed.dailyBudget ?? base.dailyBudget,
+    providerTokenLimits: parsed.providerTokenLimits ?? base.providerTokenLimits,
     preferences: { ...base.preferences, ...parsed.preferences },
   };
 }
@@ -169,7 +173,7 @@ export async function getMaskedKeys(userId: number): Promise<KeysStatusResponse>
       lastCallError: entry.lastCallError,
     };
   }
-  return { providers, dailyBudget: config.dailyBudget };
+  return { providers, dailyBudget: config.dailyBudget, providerTokenLimits: config.providerTokenLimits };
 }
 
 /** Server-only: the raw key, read at call time by a provider implementation. Never return this from an API route. */
@@ -244,6 +248,19 @@ export async function recordCallResult(
 export async function saveDailyBudget(userId: number, budget: DailyBudget): Promise<void> {
   const config = await readConfig(userId);
   config.dailyBudget = budget;
+  await writeConfig(userId, config);
+}
+
+/** tokens: null clears the limit for that provider. */
+export async function saveProviderTokenLimit(userId: number, provider: ProviderId, tokens: number | null): Promise<void> {
+  const config = await readConfig(userId);
+  const next = { ...config.providerTokenLimits };
+  if (tokens === null) {
+    delete next[provider];
+  } else {
+    next[provider] = tokens;
+  }
+  config.providerTokenLimits = next;
   await writeConfig(userId, config);
 }
 

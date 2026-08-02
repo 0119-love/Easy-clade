@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sparkline } from "@/components/ui/sparkline";
+import { Progress, ProgressIndicator, ProgressTrack } from "@/components/ui/progress";
 import { buttonVariants } from "@/components/ui/button";
 import { ProviderSquareBadge } from "@/components/dashboard/ProviderSquareBadge";
 import { PROVIDER_LABELS, PROVIDER_META, type ProviderId, type ProviderKeyStatus } from "@/lib/config/types";
@@ -23,6 +24,8 @@ interface DashboardProviderCardProps {
   /** Real wall-clock average from runs.duration_ms -- null when there's no data yet today. */
   avgDurationMs: number | null;
   sparklineData: number[];
+  /** User-set daily cap from Settings, in tokens. undefined/null means no limit configured. */
+  tokenLimit?: number | null;
   isLoading?: boolean;
 }
 
@@ -45,10 +48,12 @@ export function DashboardProviderCard({
   todayRunCount,
   avgDurationMs,
   sparklineData,
+  tokenLimit,
   isLoading,
 }: DashboardProviderCardProps) {
   const tone = providerStatusTone(keyStatus);
   const colorVar = PROVIDER_META[provider].colorVar;
+  const tokenPct = tokenLimit ? Math.min(100, (todayTokens / tokenLimit) * 100) : null;
 
   return (
     <Card className="flex flex-col gap-4 p-5">
@@ -79,6 +84,18 @@ export function DashboardProviderCard({
           <div className="text-xs text-text-secondary">
             오늘 토큰 · {todayRunCount.toLocaleString()}회 실행 · 평균 {formatDurationShort(avgDurationMs)}
           </div>
+          {tokenPct !== null && (
+            <div className="mt-2 space-y-1">
+              <Progress value={tokenPct} className="gap-0">
+                <ProgressTrack className="h-1">
+                  <ProgressIndicator className={cn(tokenPct >= 90 && "bg-destructive")} />
+                </ProgressTrack>
+              </Progress>
+              <div className="text-[11px] text-text-secondary">
+                일일 한도 {todayTokens.toLocaleString()} / {tokenLimit!.toLocaleString()}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

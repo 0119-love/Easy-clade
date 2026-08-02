@@ -82,7 +82,11 @@ export interface Preferences {
   providersOnboarded: boolean;
 }
 
+/** Optional per-provider daily token cap, set on the Settings page. Missing/undefined entry means no limit. */
+export type ProviderTokenLimits = Partial<Record<ProviderId, number>>;
+
 export interface KeysStatusResponse {
   providers: Record<ProviderId, ProviderKeyStatus>;
   dailyBudget: DailyBudget;
+  providerTokenLimits: ProviderTokenLimits;
 }

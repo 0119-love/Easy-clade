@@ -31,15 +31,44 @@ async function fetchKeysStatus(): Promise<KeysStatusResponse> {
 interface ProviderKeyRowProps {
   provider: ProviderId;
   status: KeysStatusResponse["providers"][ProviderId] | undefined;
+  tokenLimit: number | undefined;
   onSaved: () => void;
   isLoading: boolean;
 }
 
-function ProviderKeyRow({ provider, status, onSaved, isLoading }: ProviderKeyRowProps) {
+function ProviderKeyRow({ provider, status, tokenLimit, onSaved, isLoading }: ProviderKeyRowProps) {
   const [value, setValue] = useState("");
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message?: string } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [limitInput, setLimitInput] = useState(tokenLimit?.toString() ?? "");
+  const [savingLimit, setSavingLimit] = useState(false);
+  const didInitLimit = useRef(false);
+
+  useEffect(() => {
+    if (!didInitLimit.current && tokenLimit !== undefined) {
+      setLimitInput(tokenLimit.toString());
+      didInitLimit.current = true;
+    }
+  }, [tokenLimit]);
+
+  async function saveLimit() {
+    setSavingLimit(true);
+    try {
+      const res = await fetch("/api/settings/keys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider, tokenLimit: limitInput.trim() ? Number(limitInput) : null }),
+      });
+      if (!res.ok) throw new Error("저장에 실패했습니다.");
+      onSaved();
+      toast.success(`${PROVIDER_LABELS[provider]} 일일 토큰 한도가 저장되었습니다.`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "저장에 실패했습니다.");
+    } finally {
+      setSavingLimit(false);
+    }
+  }
 
   async function save() {
     if (!value.trim()) return;
@@ -190,6 +219,24 @@ function ProviderKeyRow({ provider, status, onSaved, isLoading }: ProviderKeyRow
             {testResult.success ? "연결됨" : testResult.message}
           </span>
         )}
+      </div>
+      <div className="flex items-end gap-2 border-t border-border/60 pt-3">
+        <div className="flex-1 space-y-1.5">
+          <Label htmlFor={`limit-${provider}`} className="text-xs text-text-secondary">
+            일일 토큰 한도
+          </Label>
+          <Input
+            id={`limit-${provider}`}
+            type="number"
+            min={0}
+            value={limitInput}
+            onChange={(e) => setLimitInput(e.target.value)}
+            placeholder="비워두면 한도 없음"
+          />
+        </div>
+        <Button type="button" size="sm" variant="secondary" onClick={saveLimit} disabled={savingLimit}>
+          저장
+        </Button>
       </div>
     </Card>
   );
@@ -353,6 +400,7 @@ export default function SettingsPage() {
             key={provider}
             provider={provider}
             status={keysStatus?.providers[provider]}
+            tokenLimit={keysStatus?.providerTokenLimits[provider]}
             onSaved={refresh}
             isLoading={isPending}
           />
