@@ -13,14 +13,25 @@ export interface OrchestrateRequestBody {
   systemPrompt?: string;
 }
 
-const DEFAULT_MODELS: Record<ProviderId, { fast: string; quality: string }> = {
-  openai: { fast: "gpt-4o-mini", quality: "gpt-4o" },
-  anthropic: { fast: "claude-3-5-haiku-20241022", quality: "claude-sonnet-5" },
-  google: { fast: "gemini-2.5-flash", quality: "gemini-2.5-pro" },
-  xai: { fast: "grok-2-mini", quality: "grok-2" },
-  perplexity: { fast: "sonar", quality: "sonar-pro" },
-  deepseek: { fast: "deepseek-chat", quality: "deepseek-reasoner" },
-};
+// Dynamic model resolver: always uses the first available model from the provider
+// instead of hardcoded IDs that may become stale.
+async function resolveModels(providers: ProviderId[]): Promise<Record<ProviderId, { fast: string; quality: string }>> {
+  const entries = await Promise.all(
+    providers.map(async (id) => {
+      try {
+        const prov = getProvider(id);
+        const models = await prov.listModels();
+        // Use first model as "fast", last model as "quality" (providers list cheapest-first)
+        const fast = models[0]?.id ?? "";
+        const quality = models[models.length - 1]?.id ?? fast;
+        return [id, { fast, quality }] as const;
+      } catch {
+        return [id, { fast: "", quality: "" }] as const;
+      }
+    })
+  );
+  return Object.fromEntries(entries) as Record<ProviderId, { fast: string; quality: string }>;
+}
 
 export async function POST(request: NextRequest) {
   const auth = await requireUserContext(request);
@@ -53,7 +64,11 @@ export async function POST(request: NextRequest) {
   if (targetMode === "cost_saver") {
     // Pick the single fastest/cheapest provider among selected
     const providerId: ProviderId = activeProviders.find((p) => p === "google" || p === "openai") || activeProviders[0];
-    const model = DEFAULT_MODELS[providerId]?.fast || "gemini-2.5-flash";
+    const modelMap = await resolveModels([providerId]);
+    const model = modelMap[providerId]?.fast;
+    if (!model) {
+      return NextResponse.json({ error: `프로바이더 ${providerId}의 모델을 불러오지 못했습니다.` }, { status: 500 });
+    }
     const provider = getProvider(providerId);
     const controller = new AbortController();
 
@@ -83,8 +98,10 @@ export async function POST(request: NextRequest) {
       errorMessage = err instanceof Error ? err.message : "AI 실행 중 오류";
     }
 
-    if (errorMessage && errorMessage.includes("API key")) {
-      responseText = `[최저 토큰/비용 절감 모드 응답]\n\n"${userPrompt}"에 대한 선택된 프로바이더(${PROVIDER_LABELS[providerId]})의 가장 토큰 효율적인 답변입니다.\n\n- 소요 토큰: ~128 tokens\n- 추정 비용: $0.00004 (Claude 3.5 Sonnet 대비 약 93% 비용 절약)`;
+    // Fallback: any error or empty response → use fallback text
+    if (errorMessage || !responseText) {
+      console.warn(`[Brain/orchestrate] cost_saver error from ${providerId}:`, errorMessage);
+      responseText = `죄송합니다. 현재 선택하신 AI 프로바이더(${PROVIDER_LABELS[providerId]})가 응답하지 않았습니다.\n\n**원인:** ${errorMessage ?? "빈 응답"}\n\n**해결 방법:** 설정 메뉴에서 해당 프로바이더의 API 키를 확인하거나, 다른 프로바이더를 선택해 보세요.`;
       errorMessage = null;
       inputTokens = Math.ceil(userPrompt.length / 4);
       outputTokens = Math.ceil(responseText.length / 4);
@@ -144,10 +161,10 @@ export async function POST(request: NextRequest) {
     });
   } else {
     // Best Quality Mode: Run only user-selected AI models in parallel
-    const targets: Array<{ provider: ProviderId; model: string }> = activeProviders.map((p) => ({
-      provider: p,
-      model: DEFAULT_MODELS[p]?.quality || "gpt-4o",
-    }));
+    const modelMap = await resolveModels(activeProviders);
+    const targets: Array<{ provider: ProviderId; model: string }> = activeProviders
+      .map((p) => ({ provider: p, model: modelMap[p]?.quality ?? "" }))
+      .filter((t) => t.model);
 
     const results = await Promise.all(
       targets.map(async (t) => {
@@ -178,8 +195,9 @@ export async function POST(request: NextRequest) {
           err = e instanceof Error ? e.message : "오류";
         }
 
-        if (err && err.includes("API key")) {
-          text = `[${PROVIDER_LABELS[t.provider]} (${t.model}) 답변 후보]\n\n"${userPrompt}"에 대해 선택된 프로바이더에서 응답을 생성했습니다.`;
+        if (err || !text) {
+          console.warn(`[Brain/orchestrate] best_quality error from ${t.provider}:`, err);
+          text = `[${PROVIDER_LABELS[t.provider]} 응답 불가]\n\n원인: ${err ?? "빈 응답"}\n\n설정에서 API 키를 확인해 주세요.`;
           err = null;
           inTok = Math.ceil(userPrompt.length / 4);
           outTok = Math.ceil(text.length / 4);
