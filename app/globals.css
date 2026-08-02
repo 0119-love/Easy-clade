@@ -325,3 +325,22 @@
     animation: core-breathe 4s ease-in-out infinite;
   }
 }
+
+/* Profile menu logout row (components/layout/LogoutButton.tsx) -- the
+   figure steps out through the door and fades as it clears the frame. */
+@keyframes logout-walk {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(5px, 4px);
+    opacity: 0;
+  }
+}
+@utility animate-logout-walk {
+  animation: logout-walk 700ms steps(6) forwards;
+}

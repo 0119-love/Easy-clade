@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Gavel, LogOut, Play, Plus, Search, Zap } from "lucide-react";
+import { Gavel, Play, Plus, Search, Zap } from "lucide-react";
 import { cn, emailInitials } from "@/lib/utils";
 import { PROVIDER_IDS, PROVIDER_LABELS } from "@/lib/config/types";
 import { useDashboardStore } from "@/lib/store/dashboardStore";
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { fetchProjects } from "@/lib/projects/client";
 import { ThemeToggleButton } from "@/components/layout/ThemeToggleButton";
+import { LogoutButtonContent } from "@/components/layout/LogoutButton";
 
 // Same routes/icons as Sidebar.tsx/CommandPalette.tsx's entries for these
 // destinations, so they wear the same icon everywhere.
@@ -142,8 +143,11 @@ export function TopBar({ userEmail }: { userEmail: string }) {
           <DropdownMenuContent align="end">
             <div className="truncate px-1.5 py-1 text-xs text-text-secondary">{userEmail}</div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => void handleLogout()}>
-              <LogOut className="size-4" /> 로그아웃
+            <DropdownMenuItem
+              onClick={() => void handleLogout()}
+              className="p-0 focus:bg-transparent focus:text-inherit data-[variant=destructive]:focus:bg-transparent"
+            >
+              <LogoutButtonContent />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

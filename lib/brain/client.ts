@@ -3,8 +3,9 @@ import type { BrainGraphSnapshot } from "./graph";
 
 export type { BrainStatusResponse, BrainGraphSnapshot };
 
-export async function fetchBrainStatus(): Promise<BrainStatusResponse> {
-  const res = await fetch("/api/brain");
+export async function fetchBrainStatus(isDemo: boolean = false): Promise<BrainStatusResponse> {
+  const url = isDemo ? "/api/brain?demo=true" : "/api/brain";
+  const res = await fetch(url);
   if (!res.ok) throw new Error("브레인 상태를 불러오지 못했습니다.");
   return res.json();
 }

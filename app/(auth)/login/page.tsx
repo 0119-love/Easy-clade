@@ -3,7 +3,7 @@
 import { Suspense, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, Eye, EyeOff, KeyRound, Lock, Mail } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, KeyRound, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
@@ -105,13 +105,13 @@ function LoginForm() {
         <p className="mt-2 text-sm text-text-secondary">로그인하여 AI 모델과 설정을 관리하세요.</p>
       </div>
 
-      <div className="glass w-full rounded-2xl p-8">
+      <div className="glass w-full rounded-3xl p-8">
         <div className="mb-6 flex flex-col items-center gap-3">
-          <div className="flex size-12 items-center justify-center rounded-2xl bg-white/[0.08] text-lg font-semibold text-foreground">
+          <div className="flex size-12 items-center justify-center rounded-full bg-white/[0.08] text-lg font-semibold text-foreground">
             A
           </div>
           <div className="text-center">
-            <h2 className="text-lg font-semibold text-foreground">로그인</h2>
+            <h2 className="text-2xl font-bold text-foreground">로그인</h2>
             <p className="mt-1 text-sm text-text-secondary">
               {mode === "password" ? "계정에 로그인하여 계속하세요" : "Claude API 키로 빠르게 로그인하세요"}
             </p>
@@ -119,7 +119,7 @@ function LoginForm() {
         </div>
 
         {error && (
-          <div className="mb-4 rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+          <div className="mb-4 rounded-2xl border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
             {error}
           </div>
         )}
@@ -130,10 +130,7 @@ function LoginForm() {
               <label className="text-sm text-text-secondary" htmlFor="email">
                 이메일
               </label>
-              <InputGroup>
-                <InputGroupAddon>
-                  <Mail className="size-4" />
-                </InputGroupAddon>
+              <InputGroup className="h-11 rounded-full">
                 <InputGroupInput
                   id="email"
                   type="email"
@@ -143,16 +140,16 @@ function LoginForm() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
+                <InputGroupAddon align="inline-end">
+                  <Mail className="size-4" />
+                </InputGroupAddon>
               </InputGroup>
             </div>
             <div className="space-y-1.5">
               <label className="text-sm text-text-secondary" htmlFor="password">
                 비밀번호
               </label>
-              <InputGroup>
-                <InputGroupAddon>
-                  <Lock className="size-4" />
-                </InputGroupAddon>
+              <InputGroup className="h-11 rounded-full">
                 <InputGroupInput
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -178,7 +175,7 @@ function LoginForm() {
                 비밀번호를 잊으셨나요?
               </Link>
             </div>
-            <Button type="submit" size="lg" className="w-full justify-center" disabled={pending}>
+            <Button type="submit" size="lg" className="w-full justify-center rounded-full" disabled={pending}>
               로그인 <ArrowRight className="size-4" />
             </Button>
           </form>
@@ -188,10 +185,7 @@ function LoginForm() {
               <label className="text-sm text-text-secondary" htmlFor="apiKey">
                 Claude API 키
               </label>
-              <InputGroup>
-                <InputGroupAddon>
-                  <KeyRound className="size-4" />
-                </InputGroupAddon>
+              <InputGroup className="h-11 rounded-full">
                 <InputGroupInput
                   id="apiKey"
                   type="password"
@@ -200,12 +194,15 @@ function LoginForm() {
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                 />
+                <InputGroupAddon align="inline-end">
+                  <KeyRound className="size-4" />
+                </InputGroupAddon>
               </InputGroup>
               <p className="text-xs text-text-secondary">
                 설정에서 이미 등록한 Anthropic API 키를 입력하면 바로 로그인됩니다.
               </p>
             </div>
-            <Button type="submit" size="lg" className="w-full justify-center" disabled={pending}>
+            <Button type="submit" size="lg" className="w-full justify-center rounded-full" disabled={pending}>
               API 키로 로그인 <ArrowRight className="size-4" />
             </Button>
           </form>
@@ -220,7 +217,7 @@ function LoginForm() {
             type="button"
             variant="outline"
             size="lg"
-            className="w-full justify-center"
+            className="w-full justify-center rounded-full"
             onClick={() => startOAuth("google")}
           >
             <GoogleIcon />
@@ -230,7 +227,7 @@ function LoginForm() {
             type="button"
             variant="outline"
             size="lg"
-            className="w-full justify-center"
+            className="w-full justify-center rounded-full"
             onClick={() => startOAuth("github")}
           >
             <GithubIcon />
@@ -240,7 +237,7 @@ function LoginForm() {
             type="button"
             variant="outline"
             size="lg"
-            className="w-full justify-center"
+            className="w-full justify-center rounded-full"
             onClick={() => {
               setMode((m) => (m === "password" ? "key" : "password"));
               setSubmitError(null);

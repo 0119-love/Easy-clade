@@ -398,3 +398,139 @@ export async function getBrainStatus(userId: number): Promise<BrainStatusRespons
     },
   };
 }
+
+export function getDemoBrainStatus(): BrainStatusResponse {
+  const nowIso = new Date().toISOString();
+  return {
+    kpis: {
+      nodeCount: 18,
+      connectionCount: 24,
+      running: 2,
+      pending: 1,
+      failedToday: 0,
+      eventsPerSec: 14.8,
+      avgLatencyMs: 342,
+      costUsdToday: 0.1425,
+    },
+    regions: [
+      {
+        id: "committee",
+        status: "running",
+        recentCount: 3,
+        todayCount: 12,
+        errorCountToday: 0,
+        avgLatencyMs: 410,
+        costUsdToday: 0.082,
+        metrics: [
+          { label: "실행 중", value: "2" },
+          { label: "오늘 실행", value: "12" },
+          { label: "평균 소요", value: "410ms" },
+          { label: "오늘 비용", value: "$0.0820" },
+        ],
+      },
+      {
+        id: "automations",
+        status: "running",
+        recentCount: 2,
+        todayCount: 8,
+        errorCountToday: 0,
+        avgLatencyMs: null,
+        costUsdToday: null,
+        metrics: [
+          { label: "활성", value: "3/4" },
+          { label: "오늘 실행", value: "8" },
+          { label: "대기중", value: "1" },
+        ],
+      },
+      {
+        id: "memory",
+        status: "running",
+        recentCount: 4,
+        todayCount: 19,
+        errorCountToday: 0,
+        avgLatencyMs: null,
+        costUsdToday: null,
+        metrics: [
+          { label: "고정됨", value: "5/19" },
+          { label: "오늘 추가", value: "4" },
+        ],
+      },
+      {
+        id: "workflows",
+        status: "idle",
+        recentCount: 1,
+        todayCount: 3,
+        errorCountToday: 0,
+        avgLatencyMs: null,
+        costUsdToday: null,
+        metrics: [
+          { label: "전체", value: "5" },
+          { label: "최근 편집", value: "3" },
+        ],
+      },
+      {
+        id: "tasks",
+        status: "running",
+        recentCount: 2,
+        todayCount: 7,
+        errorCountToday: 0,
+        avgLatencyMs: null,
+        costUsdToday: null,
+        metrics: [
+          { label: "미완료", value: "2/7" },
+          { label: "오늘 추가", value: "5" },
+        ],
+      },
+      {
+        id: "projects",
+        status: "running",
+        recentCount: 2,
+        todayCount: 4,
+        errorCountToday: 0,
+        avgLatencyMs: null,
+        costUsdToday: null,
+        metrics: [
+          { label: "활성 프로젝트", value: "3" },
+          { label: "연결된 실행", value: "28" },
+        ],
+      },
+      {
+        id: "runs",
+        status: "running",
+        recentCount: 5,
+        todayCount: 34,
+        errorCountToday: 0,
+        avgLatencyMs: 310,
+        costUsdToday: 0.0605,
+        metrics: [
+          { label: "오늘 실행", value: "34" },
+          { label: "평균 지연", value: "310ms" },
+          { label: "오늘 비용", value: "$0.0605" },
+          { label: "오류", value: "0" },
+        ],
+      },
+      {
+        id: "integrations",
+        status: "running",
+        recentCount: 1,
+        todayCount: 2,
+        errorCountToday: 0,
+        avgLatencyMs: null,
+        costUsdToday: null,
+        metrics: [{ label: "활성", value: "2/3" }],
+      },
+    ],
+    activity: [
+      { id: "demo:1", label: "google", detail: "AI Command Center 시뮬레이션", region: "runs", status: "success", startedAt: nowIso },
+      { id: "demo:2", label: "anthropic", detail: "코드 리팩토링 검토", region: "committee", status: "stopped", startedAt: nowIso },
+      { id: "demo:3", label: "openai", detail: "요약 자동화 작업", region: "automations", status: "success", startedAt: nowIso },
+    ],
+    topAgent: { provider: "google", runCount: 18 },
+    recentWorkflow: { name: "AI 코드 리뷰 & 자동 커밋", createdAt: nowIso },
+    recentErrors: [],
+    queue: [{ name: "매일 일일 요약 리포트 생성", overdueMinutes: 5 }],
+    memory: { pinnedCount: 5, totalCount: 19 },
+    tokenUsageToday: { inputTokens: 48200, outputTokens: 12400 },
+  };
+}
+
