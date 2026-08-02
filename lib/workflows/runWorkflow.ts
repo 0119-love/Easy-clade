@@ -1,4 +1,5 @@
 import { getProvider } from "../providers/registry";
+import { formatProviderError } from "../providers/errorMessage";
 import type { WorkflowStep } from "./queries";
 
 export interface WorkflowStepResult {
@@ -41,7 +42,7 @@ export async function runWorkflowSteps(userId: number, steps: WorkflowStep[]): P
         if (chunk.type === "error") error = chunk.message;
       }
     } catch (err) {
-      error = err instanceof Error ? err.message : "알 수 없는 오류";
+      error = formatProviderError(err, "알 수 없는 오류");
     }
 
     results.push({ stepIndex: i, provider: step.provider, model: step.model, prompt, output, error });

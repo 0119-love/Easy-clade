@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getProvider } from "@/lib/providers/registry";
 import { insertRun } from "@/lib/history/queries";
+import { formatProviderError } from "@/lib/providers/errorMessage";
 import { PROVIDER_LABELS, type ProviderId } from "@/lib/config/types";
 import { requireUserContext } from "@/lib/auth/session";
 
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest) {
         if (chunk.type === "error") errorMessage = chunk.message;
       }
     } catch (err) {
-      errorMessage = err instanceof Error ? err.message : "AI 실행 중 오류";
+      errorMessage = formatProviderError(err, "AI 실행 중 오류");
     }
 
     // Fallback: any error or empty response → use fallback text
@@ -201,7 +202,7 @@ export async function POST(request: NextRequest) {
             if (chunk.type === "error") err = chunk.message;
           }
         } catch (e) {
-          err = e instanceof Error ? e.message : "오류";
+          err = formatProviderError(e, "오류");
         }
 
         if (err || !text) {

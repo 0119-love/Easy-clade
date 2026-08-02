@@ -3,6 +3,7 @@ import { getAutomation, updateAutomationLastRun } from "@/lib/automations/querie
 import { extractCodeFile, mimeTypeForExtension, resolveFilename } from "@/lib/automations/codeExtract";
 import { getProvider } from "@/lib/providers/registry";
 import { insertRun } from "@/lib/history/queries";
+import { formatProviderError } from "@/lib/providers/errorMessage";
 import { insertFile, type FileRow } from "@/lib/files/queries";
 import { storeFile } from "@/lib/files/blobStorage";
 import { recordCallResult, sanitizeErrorMessage } from "@/lib/config/keysStore";
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
   } catch (err) {
     status = "error";
-    errorMessage = err instanceof Error ? err.message : "알 수 없는 오류";
+    errorMessage = formatProviderError(err, "알 수 없는 오류");
   }
 
   const completedAt = new Date().toISOString();

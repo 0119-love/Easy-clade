@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getProvider } from "@/lib/providers/registry";
 import { insertRun } from "@/lib/history/queries";
+import { formatProviderError } from "@/lib/providers/errorMessage";
 import { getPinnedMemoryEntries } from "@/lib/memory/queries";
 import { getFile } from "@/lib/files/queries";
 import { fireWebhooks } from "@/lib/integrations/fireWebhooks";
@@ -99,7 +100,7 @@ export async function POST(request: NextRequest) {
       } catch (err) {
         if (!request.signal.aborted) {
           status = "error";
-          errorMessage = err instanceof Error ? err.message : "알 수 없는 오류";
+          errorMessage = formatProviderError(err, "알 수 없는 오류");
           send({ type: "error", message: errorMessage });
         }
       }

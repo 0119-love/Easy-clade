@@ -1,4 +1,5 @@
 import { getProvider } from "../providers/registry";
+import { formatProviderError } from "../providers/errorMessage";
 import type { ProviderId } from "../config/types";
 import type { CommitteeStepRequest, CommitteeStepResult, CommitteeStepStatus } from "./types";
 import { DEFAULT_MODEL_BY_PROVIDER } from "./defaults";
@@ -133,7 +134,7 @@ export async function runCommitteeStep(
       errorMessage = "중지되었습니다.";
     } else {
       status = "error";
-      errorMessage = err instanceof Error ? err.message : "알 수 없는 오류";
+      errorMessage = formatProviderError(err, "알 수 없는 오류");
     }
   }
 
