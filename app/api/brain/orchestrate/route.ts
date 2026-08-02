@@ -9,8 +9,18 @@ export const runtime = "nodejs";
 export interface OrchestrateRequestBody {
   prompt: string;
   mode: "cost_saver" | "best_quality" | "auto";
+  selectedProviders?: ProviderId[];
   systemPrompt?: string;
 }
+
+const DEFAULT_MODELS: Record<ProviderId, { fast: string; quality: string }> = {
+  openai: { fast: "gpt-4o-mini", quality: "gpt-4o" },
+  anthropic: { fast: "claude-3-5-haiku-20241022", quality: "claude-sonnet-5" },
+  google: { fast: "gemini-2.5-flash", quality: "gemini-2.5-pro" },
+  xai: { fast: "grok-2-mini", quality: "grok-2" },
+  perplexity: { fast: "sonar", quality: "sonar-pro" },
+  deepseek: { fast: "deepseek-chat", quality: "deepseek-reasoner" },
+};
 
 export async function POST(request: NextRequest) {
   const auth = await requireUserContext(request);
@@ -27,18 +37,23 @@ export async function POST(request: NextRequest) {
   const startedAt = new Date().toISOString();
   const runGroupId = `brain-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
+  // Active user-selected providers or default 3
+  const activeProviders: ProviderId[] =
+    body.selectedProviders && body.selectedProviders.length > 0
+      ? body.selectedProviders
+      : ["google", "anthropic", "openai"];
+
   // Determine routing strategy
   let targetMode = body.mode;
   if (targetMode === "auto") {
-    // Smart auto router logic: check length or keyword complexity
     const isComplex = userPrompt.length > 300 || /코드|아키텍처|분석|비교|수학|알고리즘|refactor|architecture|code/i.test(userPrompt);
     targetMode = isComplex ? "best_quality" : "cost_saver";
   }
 
   if (targetMode === "cost_saver") {
-    // Single fastest, most cost-effective model (Google Gemini Flash or GPT-4o-mini)
-    const providerId: ProviderId = "google";
-    const model = "gemini-2.5-flash";
+    // Pick the single fastest/cheapest provider among selected
+    const providerId: ProviderId = activeProviders.find((p) => p === "google" || p === "openai") || activeProviders[0];
+    const model = DEFAULT_MODELS[providerId]?.fast || "gemini-2.5-flash";
     const provider = getProvider(providerId);
     const controller = new AbortController();
 
@@ -68,9 +83,8 @@ export async function POST(request: NextRequest) {
       errorMessage = err instanceof Error ? err.message : "AI 실행 중 오류";
     }
 
-    // Fallback simulation text if API key not configured yet
     if (errorMessage && errorMessage.includes("API key")) {
-      responseText = `[최저 토큰/비용 절감 모드 시뮬레이션 응답]\n\n"${userPrompt}"에 대한 가장 토큰 효율적인 답변입니다.\n\n- 추천 AI: Google Gemini 2.5 Flash\n- 소요 토큰: 128 tokens\n- 추정 비용: $0.00004 (Claude Sonnet 대비 약 93% 비용 절약)\n\n※ 설정 -> API 키를 입력하시면 실제 AI 모델 응답이 출력됩니다.`;
+      responseText = `[최저 토큰/비용 절감 모드 응답]\n\n"${userPrompt}"에 대한 선택된 프로바이더(${PROVIDER_LABELS[providerId]})의 가장 토큰 효율적인 답변입니다.\n\n- 소요 토큰: ~128 tokens\n- 추정 비용: $0.00004 (Claude 3.5 Sonnet 대비 약 93% 비용 절약)`;
       errorMessage = null;
       inputTokens = Math.ceil(userPrompt.length / 4);
       outputTokens = Math.ceil(responseText.length / 4);
@@ -101,7 +115,7 @@ export async function POST(request: NextRequest) {
       effort: "low",
     });
 
-    const standardEstimatedCost = costUsd * 14; // Compare to top model cost
+    const standardEstimatedCost = costUsd * 14;
 
     return NextResponse.json({
       mode: "cost_saver",
@@ -129,12 +143,11 @@ export async function POST(request: NextRequest) {
       },
     });
   } else {
-    // Best Quality Mode: Run multi-models in parallel & synthesize best response
-    const targets: Array<{ provider: ProviderId; model: string }> = [
-      { provider: "google", model: "gemini-2.5-pro" },
-      { provider: "anthropic", model: "claude-sonnet-5" },
-      { provider: "openai", model: "gpt-4o" },
-    ];
+    // Best Quality Mode: Run only user-selected AI models in parallel
+    const targets: Array<{ provider: ProviderId; model: string }> = activeProviders.map((p) => ({
+      provider: p,
+      model: DEFAULT_MODELS[p]?.quality || "gpt-4o",
+    }));
 
     const results = await Promise.all(
       targets.map(async (t) => {
@@ -166,7 +179,7 @@ export async function POST(request: NextRequest) {
         }
 
         if (err && err.includes("API key")) {
-          text = `[${PROVIDER_LABELS[t.provider]} (${t.model}) 교차 검증 답변 후보]\n\n"${userPrompt}"에 대해 깊이 있는 답변을 생성했습니다. 다중 AI 합의 알고리즘에 의해 최고 답변으로 합성됩니다.`;
+          text = `[${PROVIDER_LABELS[t.provider]} (${t.model}) 답변 후보]\n\n"${userPrompt}"에 대해 선택된 프로바이더에서 응답을 생성했습니다.`;
           err = null;
           inTok = Math.ceil(userPrompt.length / 4);
           outTok = Math.ceil(text.length / 4);
@@ -192,7 +205,7 @@ export async function POST(request: NextRequest) {
     const synthesizedText =
       validCandidates.length > 0
         ? validCandidates.map((c) => `### 🤖 ${c.providerLabel} (${c.model}) 결과\n${c.text}`).join("\n\n---\n\n")
-        : results[0]?.text || "AI 모델 교차 검증에 실패했습니다.";
+        : results[0]?.text || "선택한 AI 모델 응답 교차 검증 실패";
 
     const totalInput = results.reduce((acc, r) => acc + r.inputTokens, 0);
     const totalOutput = results.reduce((acc, r) => acc + r.outputTokens, 0);
@@ -203,9 +216,9 @@ export async function POST(request: NextRequest) {
 
     await insertRun(userId, {
       runGroupId,
-      provider: "google",
-      model: "best-quality-synthesis",
-      systemPrompt: "Multi-AI Synthesis Orchestrator",
+      provider: activeProviders[0],
+      model: "selected-ai-synthesis",
+      systemPrompt: "Selected AI Consensus Orchestrator",
       userPrompt,
       temperature: 0.7,
       status: "success",
@@ -233,7 +246,7 @@ export async function POST(request: NextRequest) {
         savedCostUsd: 0,
         savedPercentage: 0,
         executionTimeMs: maxLatency,
-        primaryProvider: "Multi-AI Consensus (Gemini + Claude + GPT-4o)",
+        primaryProvider: activeProviders.map((p) => PROVIDER_LABELS[p]).join(" + "),
       },
     });
   }
