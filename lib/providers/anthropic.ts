@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { getOAuthTokens, getRawKey, updateOAuthAccessToken } from "../config/keysStore";
 import { getValidAccessToken } from "../auth/anthropicOAuth";
 import { computeAnthropicCost } from "./pricing/anthropic";
+import { formatProviderError } from "./errorMessage";
 import type { ModelInfo, Provider, RunParams, StreamChunk } from "./types";
 
 const MODELS: ModelInfo[] = [
@@ -110,8 +111,7 @@ async function* streamComplete(userId: number, params: RunParams, signal: AbortS
     };
   } catch (err) {
     if (signal.aborted) return; // Stop button -- the route handler records this as "stopped", not an error
-    const message = err instanceof Error ? err.message : "알 수 없는 Anthropic 오류";
-    yield { type: "error", message };
+    yield { type: "error", message: formatProviderError(err, "알 수 없는 Anthropic 오류") };
   }
 }
 

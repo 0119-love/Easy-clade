@@ -1,4 +1,5 @@
 import type OpenAI from "openai";
+import { formatProviderError } from "./errorMessage";
 import type { RunParams, StreamChunk } from "./types";
 
 /**
@@ -61,7 +62,6 @@ export async function* streamOpenAiCompatible(
     };
   } catch (err) {
     if (signal.aborted) return; // Stop button -- the route handler records this as "stopped", not an error
-    const message = err instanceof Error ? err.message : `알 수 없는 ${label} 오류`;
-    yield { type: "error", message };
+    yield { type: "error", message: formatProviderError(err, `알 수 없는 ${label} 오류`) };
   }
 }

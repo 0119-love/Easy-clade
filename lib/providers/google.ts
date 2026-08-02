@@ -1,6 +1,7 @@
 import { FinishReason, GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { getRawKey } from "../config/keysStore";
 import { computeGoogleCost } from "./pricing/google";
+import { formatProviderError } from "./errorMessage";
 import type { ModelInfo, Provider, RunParams, StreamChunk } from "./types";
 
 // Context/output limits extrapolated from the stable pattern across the Gemini
@@ -88,8 +89,7 @@ async function* streamComplete(userId: number, params: RunParams, signal: AbortS
     };
   } catch (err) {
     if (signal.aborted) return; // Stop button -- the route handler records this as "stopped", not an error
-    const message = err instanceof Error ? err.message : "알 수 없는 Google 오류";
-    yield { type: "error", message };
+    yield { type: "error", message: formatProviderError(err, "알 수 없는 Google 오류") };
   }
 }
 

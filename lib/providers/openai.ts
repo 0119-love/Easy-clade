@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { getRawKey } from "../config/keysStore";
 import { computeOpenAiCost } from "./pricing/openai";
+import { formatProviderError } from "./errorMessage";
 import type { ModelInfo, Provider, RunParams, StreamChunk } from "./types";
 
 // gpt-5.4-mini / gpt-5.4-nano share the base model's context window and max
@@ -77,8 +78,7 @@ async function* streamComplete(userId: number, params: RunParams, signal: AbortS
     }
   } catch (err) {
     if (signal.aborted) return; // Stop button -- the route handler records this as "stopped", not an error
-    const message = err instanceof Error ? err.message : "알 수 없는 OpenAI 오류";
-    yield { type: "error", message };
+    yield { type: "error", message: formatProviderError(err, "알 수 없는 OpenAI 오류") };
   }
 }
 
