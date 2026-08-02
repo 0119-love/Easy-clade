@@ -13,18 +13,27 @@ export interface OrchestrateRequestBody {
   systemPrompt?: string;
 }
 
-// Dynamic model resolver: always uses the first available model from the provider
-// instead of hardcoded IDs that may become stale.
+// Dynamic model resolver: ranks each provider's real listModels() by real
+// estimateCost() and picks the cheapest as "fast", priciest as "quality".
+// Does NOT assume anything about array order -- a prior version assumed
+// "first is cheapest," which is backwards for 5 of 6 providers (only
+// deepseek happens to list cheap-first) and was silently sending the
+// costliest preview model in cost_saver mode and the weakest model in
+// best_quality mode for Claude/Gemini/ChatGPT.
 async function resolveModels(providers: ProviderId[]): Promise<Record<ProviderId, { fast: string; quality: string }>> {
   const entries = await Promise.all(
     providers.map(async (id) => {
       try {
         const prov = getProvider(id);
         const models = await prov.listModels();
-        // Use first model as "fast", last model as "quality" (providers list cheapest-first)
-        const fast = models[0]?.id ?? "";
-        const quality = models[models.length - 1]?.id ?? fast;
-        return [id, { fast, quality }] as const;
+        if (models.length === 0) return [id, { fast: "", quality: "" }] as const;
+
+        const priced = await Promise.all(
+          models.map(async (m) => ({ id: m.id, cost: await prov.estimateCost(m.id, 1_000_000, 1_000_000) })),
+        );
+        const cheapest = priced.reduce((min, p) => (p.cost < min.cost ? p : min));
+        const priciest = priced.reduce((max, p) => (p.cost > max.cost ? p : max));
+        return [id, { fast: cheapest.id, quality: priciest.id }] as const;
       } catch {
         return [id, { fast: "", quality: "" }] as const;
       }

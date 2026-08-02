@@ -99,5 +99,8 @@ export const googleProvider: Provider = {
   async listModels() {
     return MODELS;
   },
+  async estimateCost(modelId, inputTokens, outputTokens) {
+    return computeGoogleCost(modelId, inputTokens, outputTokens);
+  },
   streamComplete,
 };

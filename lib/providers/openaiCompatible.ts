@@ -39,6 +39,9 @@ export function createOpenAiCompatibleProvider(config: {
     async listModels() {
       return config.models;
     },
+    async estimateCost(modelId, inputTokens, outputTokens) {
+      return config.computeCost(modelId, inputTokens, outputTokens);
+    },
     streamComplete,
   };
 }

@@ -121,5 +121,8 @@ export const anthropicProvider: Provider = {
   async listModels() {
     return MODELS;
   },
+  async estimateCost(modelId, inputTokens, outputTokens) {
+    return computeAnthropicCost(modelId, inputTokens, outputTokens);
+  },
   streamComplete,
 };

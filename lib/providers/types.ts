@@ -41,6 +41,15 @@ export interface Provider {
   label: string;
   listModels(): Promise<ModelInfo[]>;
   streamComplete(userId: number, params: RunParams, signal: AbortSignal): AsyncIterable<StreamChunk>;
+  /**
+   * Real per-model pricing, keyed by the exact model id from listModels().
+   * Exists so callers that need to rank/pick a model by cost (e.g. the Brain
+   * orchestrator's cheapest/priciest selection) never have to assume
+   * anything about how listModels() orders its array -- that assumption
+   * ("first is cheapest") was wrong for 5 of 6 providers and broke Claude/
+   * Gemini/ChatGPT in cost_saver and best_quality mode.
+   */
+  estimateCost(modelId: string, inputTokens: number, outputTokens: number): Promise<number>;
 }
 
 export interface ModelPricing {

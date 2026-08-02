@@ -88,5 +88,8 @@ export const openaiProvider: Provider = {
   async listModels() {
     return MODELS;
   },
+  async estimateCost(modelId, inputTokens, outputTokens) {
+    return computeOpenAiCost(modelId, inputTokens, outputTokens);
+  },
   streamComplete,
 };

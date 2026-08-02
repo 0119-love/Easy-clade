@@ -54,6 +54,9 @@ function makeMockProvider(id: Provider["id"], label: string): Provider {
     async listModels() {
       return MODELS;
     },
+    async estimateCost() {
+      return 0;
+    },
     streamComplete,
   };
 }

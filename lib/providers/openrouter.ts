@@ -112,5 +112,9 @@ export const openrouterProvider: Provider = {
     const catalog = await getCatalog().catch(() => null);
     return catalog?.models ?? [];
   },
+  async estimateCost(modelId, inputTokens, outputTokens) {
+    const catalog = await getCatalog().catch(() => null);
+    return catalog ? computeOpenRouterCost(catalog.pricing, modelId, inputTokens, outputTokens) : 0;
+  },
   streamComplete,
 };
