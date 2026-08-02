@@ -39,6 +39,9 @@ export default function DashboardPage() {
   } = useQuery({
     queryKey: ["dashboard", "today"],
     queryFn: fetchDashboardToday,
+    // System Status card polls this for live token/call/success-rate numbers
+    // instead of only updating on a manual refresh or page reload.
+    refetchInterval: 30_000,
   });
   const { data: trend, isPending: trendPending } = useQuery({
     queryKey: ["dashboard", "trend", trendRange],

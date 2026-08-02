@@ -9,7 +9,13 @@ async function fetchKeysStatus(): Promise<KeysStatusResponse> {
 
 /** Shared by TopBar's status pill and the dashboard's system-status card -- both read the same "/api/settings/keys" source, so they should never drift. */
 export function useSystemStatus() {
-  const { data, isPending } = useQuery({ queryKey: ["settings", "keys"], queryFn: fetchKeysStatus });
+  // Polled, not fetch-once -- provider connection/error status and daily
+  // token limits should reflect the real account state without a manual refresh.
+  const { data, isPending } = useQuery({
+    queryKey: ["settings", "keys"],
+    queryFn: fetchKeysStatus,
+    refetchInterval: 30_000,
+  });
   const providers = data ? Object.values(data.providers) : [];
   const configuredCount = providers.filter((p) => p.configured).length;
   const anyRecentFailure = providers.some((p) => p.configured && p.lastCallStatus === "error");
