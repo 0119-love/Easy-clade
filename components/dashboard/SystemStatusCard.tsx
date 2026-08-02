@@ -38,7 +38,7 @@ export function SystemStatusCard({ totals, tokenSparkline, isLoading }: SystemSt
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-3 xl:grid-cols-5 xl:divide-x xl:divide-border/60 xl:[&>*:not(:first-child)]:pl-6">
         <KpiTile
           label="오늘 토큰"
           value={(totals?.todayTokens ?? 0).toLocaleString()}

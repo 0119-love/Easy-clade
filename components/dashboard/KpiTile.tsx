@@ -15,13 +15,13 @@ interface KpiTileProps {
 
 export function KpiTile({ label, value, changePct, invertTrend, sparklineData, isLoading }: KpiTileProps) {
   return (
-    <div className="space-y-1">
-      <div className="text-xs text-text-secondary">{label}</div>
+    <div className="min-w-0 space-y-1.5">
+      <div className="truncate text-xs text-text-secondary">{label}</div>
       {isLoading ? (
-        <Skeleton className="h-6 w-16" />
+        <Skeleton className="h-7 w-20" />
       ) : (
-        <div className="flex items-center gap-2">
-          <div className="font-mono text-xl font-semibold text-foreground">{value}</div>
+        <div className="space-y-0.5">
+          <div className="font-mono text-xl font-semibold tabular-nums text-foreground">{value}</div>
           <TrendBadge changePct={changePct} invert={invertTrend} />
         </div>
       )}

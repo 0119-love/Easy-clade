@@ -1,4 +1,4 @@
-import type { ProviderId } from "../config/types";
+import { PROVIDER_LABELS, type ProviderId } from "../config/types";
 import { useCommitteeStore } from "../store/committeeStore";
 import type { CommitteeRunRequest, CommitteeStepRequest, CommitteeStepResult } from "./types";
 
@@ -155,7 +155,18 @@ export async function runCommittee(request: CommitteeRunRequest): Promise<void> 
   totalOutputTokens += draftTotals.outputTokens;
 
   if (activeProviders.length < 2) {
-    store.fail("초안 생성에 실패한 프로바이더가 너무 많아 진행할 수 없습니다. 잠시 후 다시 시도해주세요.");
+    // Surface *why* each provider failed (e.g. "크레딧 부족", "403 라이선스 없음")
+    // instead of a generic message -- this is almost always a billing/quota
+    // issue on the vendor's side, not a transient app error, so the fix is
+    // "go top up that provider," which the user can only act on if they can
+    // see which provider and what the vendor actually said.
+    const failedDetails = draftResults
+      .filter((d) => d.result.status !== "success")
+      .map((d) => `${PROVIDER_LABELS[d.provider]}: ${d.result.errorMessage ?? "알 수 없는 오류"}`)
+      .join("\n");
+    store.fail(
+      `초안 생성에 실패한 프로바이더가 너무 많아 진행할 수 없습니다 (성공 ${activeProviders.length}/${request.providers.length}).\n${failedDetails}`,
+    );
     await postFinalize(committeeRunId, {
       status: "error",
       finalConsensusText: null,

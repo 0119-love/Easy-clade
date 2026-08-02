@@ -47,7 +47,7 @@ export function FinalResultCard({ status, finalConsensusText, finalQualityScore,
       </div>
 
       {!finalConsensusText ? (
-        <p className="text-sm text-danger">{errorMessage ?? "표시할 결과가 없습니다."}</p>
+        <p className="whitespace-pre-line text-sm text-danger">{errorMessage ?? "표시할 결과가 없습니다."}</p>
       ) : (
         <>
           {finalQualityScore !== null && (
