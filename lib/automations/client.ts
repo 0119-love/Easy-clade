@@ -22,7 +22,7 @@ export async function fetchAutomations(): Promise<{ automations: AutomationRow[]
   return res.json();
 }
 
-export async function createAutomation(input: NewAutomationInput): Promise<void> {
+export async function createAutomation(input: NewAutomationInput): Promise<AutomationRow> {
   const res = await fetch("/api/automations", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -32,6 +32,8 @@ export async function createAutomation(input: NewAutomationInput): Promise<void>
     const data = (await res.json().catch(() => null)) as { error?: string } | null;
     throw new Error(data?.error ?? "자동화를 추가하지 못했습니다.");
   }
+  const data = (await res.json()) as { automation: AutomationRow };
+  return data.automation;
 }
 
 export async function deleteAutomationRemote(id: number): Promise<void> {
@@ -41,7 +43,7 @@ export async function deleteAutomationRemote(id: number): Promise<void> {
 
 export async function runAutomationRemote(
   id: number,
-): Promise<{ status: "success" | "error"; errorMessage: string | null; file: FileRow | null }> {
+): Promise<{ status: "success" | "error"; errorMessage: string | null; file: FileRow | null; responseText?: string | null }> {
   const res = await fetch(`/api/automations/${id}/run`, { method: "POST" });
   if (!res.ok) throw new Error("자동화 실행에 실패했습니다.");
   return res.json();
