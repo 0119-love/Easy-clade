@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ProviderMark } from "@/components/ui/provider-mark";
 import {
   PROVIDER_IDS,
@@ -17,6 +18,7 @@ import {
   type KeysStatusResponse,
   type ProviderId,
 } from "@/lib/config/types";
+import { PROVIDER_SETUP_STEPS } from "@/lib/config/providerSetupGuides";
 import { extractApiKey } from "@/lib/config/keyPatterns";
 import { fetchCurrentUser, updateDisplayName } from "@/lib/auth/client";
 
@@ -123,6 +125,22 @@ function ProviderKeyRow({ provider, status, onSaved, isLoading }: ProviderKeyRow
           </span>
         )}
       </div>
+      {!status?.configured && status?.authType !== "oauth" && (
+        <Accordion>
+          <AccordionItem value={provider} className="border-none">
+            <AccordionTrigger className="w-fit py-0 text-xs text-text-secondary hover:no-underline">
+              발급 방법 보기
+            </AccordionTrigger>
+            <AccordionContent>
+              <ol className="list-inside list-decimal space-y-1 pt-2 text-xs text-text-secondary">
+                {PROVIDER_SETUP_STEPS[provider].map((step, i) => (
+                  <li key={i}>{step}</li>
+                ))}
+              </ol>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      )}
       {status?.authType === "oauth" ? (
         <div className="flex items-center justify-between rounded-lg border border-border bg-accent/40 px-3 py-2">
           <span className="text-xs text-text-secondary">
