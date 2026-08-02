@@ -46,4 +46,10 @@ export const PROVIDER_SETUP_STEPS: Record<ProviderId, string[]> = {
     "생성된 키를 복사해서 아래 입력창에 붙여넣으세요.",
     "Top up 메뉴에서 잔액을 충전해야 사용할 수 있어요 (다른 프로바이더보다 저렴한 편이에요).",
   ],
+  openrouter: [
+    "openrouter.ai에서 회원가입 또는 로그인하세요.",
+    "우측 상단 프로필 메뉴의 Keys에서 새 키를 만드세요.",
+    "생성된 키를 복사해서 아래 입력창에 붙여넣으세요.",
+    "openrouter.ai 자체에 선불 크레딧을 충전해야 사용할 수 있어요. 키 하나로 Claude, GPT, Gemini 등 다양한 모델을 이 앱 안에서 바로 쓸 수 있는 게 장점이에요.",
+  ],
 };

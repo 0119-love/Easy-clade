@@ -16,6 +16,7 @@ const PROVIDER_TAGLINES: Record<ProviderId, string> = {
   xai: "실시간성과 개성 있는 응답",
   perplexity: "실시간 웹 검색 기반 답변",
   deepseek: "가성비 좋은 추론 모델",
+  openrouter: "키 하나로 100개 이상의 모델에 접속",
 };
 
 export function ProviderHoverCard({ provider }: { provider: ProviderId }) {

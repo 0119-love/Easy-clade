@@ -95,6 +95,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     xai: defaultCard("grok-5"),
     perplexity: defaultCard("sonar-pro"),
     deepseek: defaultCard("deepseek-chat"),
+    openrouter: defaultCard("openai/gpt-4o-mini"),
   },
   systemPrompt: "",
   userPrompt: "",

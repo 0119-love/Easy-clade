@@ -1,6 +1,14 @@
-export type ProviderId = "anthropic" | "openai" | "google" | "xai" | "perplexity" | "deepseek";
+export type ProviderId = "anthropic" | "openai" | "google" | "xai" | "perplexity" | "deepseek" | "openrouter";
 
-export const PROVIDER_IDS: ProviderId[] = ["anthropic", "openai", "google", "xai", "perplexity", "deepseek"];
+export const PROVIDER_IDS: ProviderId[] = [
+  "anthropic",
+  "openai",
+  "google",
+  "xai",
+  "perplexity",
+  "deepseek",
+  "openrouter",
+];
 
 export const PROVIDER_LABELS: Record<ProviderId, string> = {
   anthropic: "Claude",
@@ -9,6 +17,7 @@ export const PROVIDER_LABELS: Record<ProviderId, string> = {
   xai: "Grok",
   perplexity: "Perplexity",
   deepseek: "DeepSeek",
+  openrouter: "OpenRouter",
 };
 
 /**
@@ -25,6 +34,7 @@ export const PROVIDER_META: Record<ProviderId, { colorVar: string }> = {
   xai: { colorVar: "--provider-xai" },
   perplexity: { colorVar: "--provider-perplexity" },
   deepseek: { colorVar: "--provider-deepseek" },
+  openrouter: { colorVar: "--provider-openrouter" },
 };
 
 /** Deep links straight to each provider's API key creation page. */
@@ -35,6 +45,7 @@ export const PROVIDER_KEY_URLS: Record<ProviderId, string> = {
   xai: "https://console.x.ai",
   perplexity: "https://www.perplexity.ai/account/api/keys",
   deepseek: "https://platform.deepseek.com/api_keys",
+  openrouter: "https://openrouter.ai/keys",
 };
 
 /**

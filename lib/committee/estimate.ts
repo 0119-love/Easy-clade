@@ -30,7 +30,20 @@ const ASSUMED_LATENCY_SECONDS: Record<ProviderId, number> = {
   xai: 10,
   perplexity: 14,
   deepseek: 9,
+  openrouter: 11,
 };
+
+// OpenRouter's real per-model pricing lives in a live catalog fetch
+// (lib/providers/openrouter.ts), which this module deliberately can't call --
+// estimateCommitteeRun() is documented as pure/no-network so the composer can
+// recompute it on every keystroke. A flat mid-range placeholder (same shape
+// as the "PLACEHOLDER" xAI/Perplexity/DeepSeek tables in
+// lib/providers/pricing/) keeps that promise; the real run still bills the
+// real per-model catalog price, only this pre-run estimate is approximate.
+function estimateOpenRouterCost(_model: string, inputTokens: number, outputTokens: number): number {
+  const PLACEHOLDER_PRICING = { inputPerMTok: 3.0, outputPerMTok: 15.0 };
+  return (inputTokens / 1_000_000) * PLACEHOLDER_PRICING.inputPerMTok + (outputTokens / 1_000_000) * PLACEHOLDER_PRICING.outputPerMTok;
+}
 
 const COST_FN: Record<ProviderId, (model: string, inputTokens: number, outputTokens: number) => number> = {
   anthropic: computeAnthropicCost,
@@ -39,6 +52,7 @@ const COST_FN: Record<ProviderId, (model: string, inputTokens: number, outputTok
   xai: computeXaiCost,
   perplexity: computePerplexityCost,
   deepseek: computeDeepseekCost,
+  openrouter: estimateOpenRouterCost,
 };
 
 export interface CommitteeEstimateInput {

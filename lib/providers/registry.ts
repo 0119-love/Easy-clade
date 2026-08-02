@@ -5,11 +5,13 @@ import { googleProvider } from "./google";
 import { xaiProvider } from "./xai";
 import { perplexityProvider } from "./perplexity";
 import { deepseekProvider } from "./deepseek";
+import { openrouterProvider } from "./openrouter";
 import {
   mockAnthropicProvider,
   mockDeepseekProvider,
   mockGoogleProvider,
   mockOpenaiProvider,
+  mockOpenrouterProvider,
   mockPerplexityProvider,
   mockXaiProvider,
 } from "./mock";
@@ -22,6 +24,7 @@ const REAL_PROVIDERS: Record<ProviderId, Provider> = {
   xai: xaiProvider,
   perplexity: perplexityProvider,
   deepseek: deepseekProvider,
+  openrouter: openrouterProvider,
 };
 
 const MOCK_PROVIDERS: Record<ProviderId, Provider> = {
@@ -31,6 +34,7 @@ const MOCK_PROVIDERS: Record<ProviderId, Provider> = {
   xai: mockXaiProvider,
   perplexity: mockPerplexityProvider,
   deepseek: mockDeepseekProvider,
+  openrouter: mockOpenrouterProvider,
 };
 
 // MOCK_PROVIDERS=true swaps every provider for a deterministic canned-text

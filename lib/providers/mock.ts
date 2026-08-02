@@ -64,3 +64,4 @@ export const mockGoogleProvider = makeMockProvider("google", "Gemini (mock)");
 export const mockXaiProvider = makeMockProvider("xai", "Grok (mock)");
 export const mockPerplexityProvider = makeMockProvider("perplexity", "Perplexity (mock)");
 export const mockDeepseekProvider = makeMockProvider("deepseek", "DeepSeek (mock)");
+export const mockOpenrouterProvider = makeMockProvider("openrouter", "OpenRouter (mock)");

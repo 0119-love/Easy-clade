@@ -14,6 +14,31 @@ const SIZE_PX: Record<NonNullable<ProviderMarkProps["size"]>, number> = {
   default: 32,
 };
 
+/**
+ * @lobehub/icons has no OpenRouter mark (it's a smaller/newer brand than the
+ * six model vendors above). Rather than block on finding an icon asset,
+ * falls back to the same "monogram in a tinted circle" this file already
+ * uses in spirit for avoiding real trademark marks -- tinted with
+ * --provider-openrouter (app/globals.css), same as every other provider's
+ * identity color.
+ */
+function OpenRouterMonogram({ size, className }: { size: number; className?: string }) {
+  return (
+    <span
+      className={cn("inline-flex shrink-0 items-center justify-center rounded-full font-semibold", className)}
+      style={{
+        width: size,
+        height: size,
+        fontSize: size * 0.4,
+        color: "var(--provider-openrouter)",
+        background: "color-mix(in oklch, var(--provider-openrouter), transparent 85%)",
+      }}
+    >
+      OR
+    </span>
+  );
+}
+
 // Real provider brand marks via @lobehub/icons (a dedicated icon package for
 // this exact use -- accurate marks without us shipping trademarked SVGs
 // ourselves). "xai" ships a Grok mark since that's the model brand xAI ships
@@ -26,6 +51,7 @@ const AVATAR_BY_PROVIDER: Record<ProviderId, ComponentType<{ size: number; class
   xai: Grok.Avatar,
   perplexity: Perplexity.Avatar,
   deepseek: DeepSeek.Avatar,
+  openrouter: OpenRouterMonogram,
 };
 
 /** Real provider brand mark in a circular frame. */

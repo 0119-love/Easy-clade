@@ -10,6 +10,7 @@ const PROVIDER_KEY_PATTERNS: Partial<Record<ProviderId, RegExp>> = {
   openai: /sk-(?!ant-)[a-zA-Z0-9_-]{20,}/,
   google: /AIza[0-9A-Za-z_-]{35}/,
   perplexity: /pplx-[a-zA-Z0-9]{20,}/,
+  openrouter: /sk-or-v1-[a-zA-Z0-9]{20,}/,
 };
 
 /** Extracts a provider-shaped API key from arbitrary pasted text; falls back to the trimmed input if no match. */

@@ -11,10 +11,12 @@ interface RingConfig {
   providers: ProviderId[];
 }
 
-// 6 real providers this app actually supports, split 2-per-ring across 3
-// rings -- the reference spec's other 3 (OpenRouter/Qwen/Mistral) have no
-// connection support here, so showing them would just be decoration
-// pretending to be a real feature. Durations stay within the 40-60s spec.
+// 6 providers shown here, split 2-per-ring across 3 rings. OpenRouter is a
+// real 7th supported provider now (lib/providers/openrouter.ts) but isn't
+// in this landing-page orbit -- fitting a 7th badge into the ring layout
+// below is a marketing/design decision on its own, not bundled into the
+// provider-support work. Qwen/Mistral remain unsupported. Durations stay
+// within the 40-60s spec.
 const RINGS: RingConfig[] = [
   { radius: 110, durationSeconds: 42, providers: ["anthropic", "openai"] },
   { radius: 170, durationSeconds: 50, providers: ["google", "xai"] },

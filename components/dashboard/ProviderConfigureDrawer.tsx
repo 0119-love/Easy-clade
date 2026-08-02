@@ -1,7 +1,7 @@
 "use client";
 
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ModelPicker } from "@/components/dashboard/ModelPicker";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -50,18 +50,7 @@ export function ProviderConfigureDrawer({ provider, models, isLoading, open, onO
             {isLoading ? (
               <Skeleton className="h-8 w-full" />
             ) : (
-              <Select value={card.model} onValueChange={(value) => value && setCardModel(provider, value as string)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue>{(value: string) => models.find((m) => m.id === value)?.label ?? value}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {models.map((m) => (
-                    <SelectItem key={m.id} value={m.id}>
-                      {m.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ModelPicker models={models} value={card.model} onChange={(modelId) => setCardModel(provider, modelId)} />
             )}
           </div>
 

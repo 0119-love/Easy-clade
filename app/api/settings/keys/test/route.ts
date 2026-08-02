@@ -5,6 +5,7 @@ import { googleProvider } from "@/lib/providers/google";
 import { xaiProvider } from "@/lib/providers/xai";
 import { perplexityProvider } from "@/lib/providers/perplexity";
 import { deepseekProvider } from "@/lib/providers/deepseek";
+import { openrouterProvider } from "@/lib/providers/openrouter";
 import { recordCallResult, sanitizeErrorMessage } from "@/lib/config/keysStore";
 import { requireUserContext } from "@/lib/auth/session";
 import { PROVIDER_IDS, type ProviderId } from "@/lib/config/types";
@@ -21,6 +22,7 @@ const REAL_PROVIDERS: Record<ProviderId, Provider> = {
   xai: xaiProvider,
   perplexity: perplexityProvider,
   deepseek: deepseekProvider,
+  openrouter: openrouterProvider,
 };
 
 export async function POST(request: NextRequest) {

@@ -10,6 +10,10 @@ export const DEFAULT_MODEL_BY_PROVIDER: Record<ProviderId, string> = {
   xai: "grok-5",
   perplexity: "sonar-pro",
   deepseek: "deepseek-chat",
+  // OpenRouter model ids are vendor-prefixed and change over time (see
+  // lib/providers/openrouter.ts's live catalog) -- this is just a sane,
+  // widely-available default for a fresh selection, not guaranteed current.
+  openrouter: "openai/gpt-4o-mini",
 };
 
 export const DEFAULT_TARGET_QUALITY_SCORE = 94;
