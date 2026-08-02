@@ -501,7 +501,7 @@ export async function getCostKillerLeaderboard(userId: number, minSampleSize = 3
   }));
 }
 
-export type DashboardRange = "24h" | "7d" | "30d";
+export type DashboardRange = "hourly" | "daily" | "monthly";
 
 export interface ProviderTrendPoint {
   bucket: string;
@@ -509,10 +509,13 @@ export interface ProviderTrendPoint {
   tokens: number;
 }
 
-const RANGE_CONFIG: Record<DashboardRange, { hourly: boolean; lookbackMs: number }> = {
-  "24h": { hourly: true, lookbackMs: 24 * 60 * 60_000 },
-  "7d": { hourly: false, lookbackMs: 7 * 86_400_000 },
-  "30d": { hourly: false, lookbackMs: 30 * 86_400_000 },
+// bucketFormat is a Postgres to_char() pattern, one of exactly 3 hardcoded
+// literals below -- never built from request input (see the interpolation
+// comment further down).
+const RANGE_CONFIG: Record<DashboardRange, { bucketFormat: string; lookbackMs: number }> = {
+  hourly: { bucketFormat: "YYYY-MM-DD HH24:00", lookbackMs: 24 * 60 * 60_000 },
+  daily: { bucketFormat: "YYYY-MM-DD", lookbackMs: 30 * 86_400_000 },
+  monthly: { bucketFormat: "YYYY-MM", lookbackMs: 365 * 86_400_000 },
 };
 
 /**
@@ -523,14 +526,12 @@ const RANGE_CONFIG: Record<DashboardRange, { hourly: boolean; lookbackMs: number
  * themselves before charting.
  */
 export async function getUsageTrendByProvider(userId: number, range: DashboardRange): Promise<ProviderTrendPoint[]> {
-  const { hourly, lookbackMs } = RANGE_CONFIG[range];
+  const { bucketFormat, lookbackMs } = RANGE_CONFIG[range];
   const sinceIso = new Date(Date.now() - lookbackMs).toISOString();
-  // hourly is a fixed boolean from RANGE_CONFIG (never request input), so this
-  // interpolation only ever picks between two hardcoded literals -- not
+  // bucketFormat comes from RANGE_CONFIG[range] above (never request input),
+  // so this interpolation only ever picks between 3 hardcoded literals -- not
   // string-built from anything a caller passes in.
-  const bucketExpr = hourly
-    ? `to_char(started_at::timestamptz, 'YYYY-MM-DD HH24:00')`
-    : `to_char(started_at::timestamptz, 'YYYY-MM-DD')`;
+  const bucketExpr = `to_char(started_at::timestamptz, '${bucketFormat}')`;
   const rows = await queryAll<{ bucket: string; provider: ProviderId; tokens: number }>(
     `SELECT ${bucketExpr} AS bucket, provider, COALESCE(SUM(input_tokens + output_tokens), 0) AS tokens
      FROM runs WHERE user_id = ? AND started_at >= ?

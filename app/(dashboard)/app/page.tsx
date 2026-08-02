@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
@@ -15,10 +16,8 @@ import { DashboardFab } from "@/components/dashboard/DashboardFab";
 import { useSystemStatus } from "@/lib/hooks/useSystemStatus";
 import { PROVIDER_IDS } from "@/lib/config/types";
 import type { ModelInfo } from "@/lib/providers/types";
+import type { DashboardRange } from "@/lib/history/queries";
 import { fetchActivityHeatmap, fetchAnalytics, fetchDashboardToday, fetchDashboardTrend } from "@/lib/analytics/client";
-
-// Fixed instead of user-selectable (the 24시간/7일/30일 tab control was removed).
-const TREND_RANGE = "7d";
 
 interface ModelsResponse {
   models: Record<string, ModelInfo[]>;
@@ -32,14 +31,15 @@ async function fetchModels(): Promise<ModelsResponse> {
 
 export default function DashboardPage() {
   const status = useSystemStatus();
+  const [trendRange, setTrendRange] = useState<DashboardRange>("daily");
   const { data: modelsData, isPending: modelsPending } = useQuery({ queryKey: ["models"], queryFn: fetchModels });
   const { data: today, isPending: todayPending } = useQuery({
     queryKey: ["dashboard", "today"],
     queryFn: fetchDashboardToday,
   });
   const { data: trend, isPending: trendPending } = useQuery({
-    queryKey: ["dashboard", "trend", TREND_RANGE],
-    queryFn: () => fetchDashboardTrend(TREND_RANGE),
+    queryKey: ["dashboard", "trend", trendRange],
+    queryFn: () => fetchDashboardTrend(trendRange),
   });
   const { data: analytics, isPending: analyticsPending } = useQuery({ queryKey: ["analytics"], queryFn: fetchAnalytics });
   const { data: heatmap, isPending: heatmapPending } = useQuery({ queryKey: ["dashboard", "heatmap"], queryFn: fetchActivityHeatmap });
@@ -80,7 +80,7 @@ export default function DashboardPage() {
 
       <Card className="p-6">
         <h2 className="mb-4 text-sm font-semibold text-foreground">토큰 사용량 추이</h2>
-        <TokenTrendChart points={trend?.points ?? []} isLoading={trendPending} />
+        <TokenTrendChart points={trend?.points ?? []} range={trendRange} onRangeChange={setTrendRange} isLoading={trendPending} />
       </Card>
 
       <Card className="p-6">

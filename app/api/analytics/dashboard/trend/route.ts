@@ -5,7 +5,7 @@ import { requireUserContext } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
 
-const RANGES: DashboardRange[] = ["24h", "7d", "30d"];
+const RANGES: DashboardRange[] = ["hourly", "daily", "monthly"];
 
 export interface DashboardTrendPoint {
   bucket: string;
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const rangeParam = searchParams.get("range");
-  const range: DashboardRange = RANGES.includes(rangeParam as DashboardRange) ? (rangeParam as DashboardRange) : "7d";
+  const range: DashboardRange = RANGES.includes(rangeParam as DashboardRange) ? (rangeParam as DashboardRange) : "daily";
 
   const rows = await getUsageTrendByProvider(auth.id, range);
 
