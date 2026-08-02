@@ -15,10 +15,11 @@ import {
   Play,
 } from "lucide-react";
 import type { BrainRegionStatus } from "@/lib/brain/queries";
+import type { BrainRegionId } from "@/lib/brain/regions";
 import { cn } from "@/lib/utils";
 
 interface HubCardMeta {
-  id: string;
+  id: BrainRegionId;
   name: string;
   nameKo: string;
   description: string;
@@ -126,7 +127,7 @@ export function BrainSubsystemsHub({ regions }: { regions: BrainRegionStatus[] |
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {SUBSYSTEM_METAS.map((sub) => {
-        const raw = regionMap.get(sub.id as any);
+        const raw = regionMap.get(sub.id);
         const Icon = sub.icon;
         const isRunning = raw?.status === "running";
         const isError = raw?.status === "error";

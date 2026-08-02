@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     const dbStart = Date.now();
     await queryOne("SELECT 1 AS n", []);
     dbLatencyMs = Date.now() - dbStart;
-  } catch (err) {
+  } catch {
     dbStatus = "error";
   }
 

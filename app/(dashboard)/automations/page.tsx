@@ -7,7 +7,6 @@ import {
   Clock,
   Code2,
   FileText,
-  MousePointerClick,
   Play,
   Plus,
   Trash2,
@@ -22,21 +21,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProviderMark } from "@/components/ui/provider-mark";
-import { PROVIDER_IDS, PROVIDER_LABELS, type ProviderId } from "@/lib/config/types";
+import { PROVIDER_LABELS } from "@/lib/config/types";
 import type { ModelInfo } from "@/lib/providers/types";
-import {
-  createAutomation,
-  deleteAutomationRemote,
-  fetchAutomations,
-  runAutomationRemote,
-  type AutomationOutputType,
-  type AutomationRow,
-  type TriggerType,
-} from "@/lib/automations/client";
+import { createAutomation, deleteAutomationRemote, fetchAutomations, runAutomationRemote } from "@/lib/automations/client";
 import {
   AUTOMATION_TEMPLATES,
   AUTOMATION_HUB_SYSTEMS,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Zap,
@@ -92,15 +92,16 @@ export function BrainOrchestratorView() {
     },
   });
 
-  // Initialize selected providers to configured ones
+  // Initialize selected providers to configured ones -- once, the first time
+  // the key status loads. Without the guard, any background refetch of
+  // keysData (e.g. react-query's refetch-on-window-focus) would re-run this
+  // and silently wipe out a provider the user had manually unchecked.
+  const didInitProviders = useRef(false);
   useEffect(() => {
-    if (keysData?.providers) {
+    if (keysData?.providers && !didInitProviders.current) {
+      didInitProviders.current = true;
       const configuredIds = ALL_PROVIDERS.map((p) => p.id).filter((id) => keysData.providers[id]?.configured);
-      if (configuredIds.length > 0) {
-        setSelectedProviders(configuredIds);
-      } else {
-        setSelectedProviders(["google", "openai"]);
-      }
+      setSelectedProviders(configuredIds.length > 0 ? configuredIds : ["google", "openai"]);
     }
   }, [keysData]);
 
