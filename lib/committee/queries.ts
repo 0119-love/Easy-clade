@@ -135,6 +135,14 @@ export async function finalizeCommitteeRun(userId: number, id: number, patch: Fi
   );
 }
 
+export interface ShareTokenResult {
+  shareToken: string;
+  /** True the first time a token is minted for this run -- tells the route whether it still needs to generate share_summary. */
+  needsSummary: boolean;
+  providers: ProviderId[];
+  finalConsensusText: string;
+}
+
 /**
  * Returns the run's existing share token, or mints and persists a new one --
  * idempotent so clicking "공유 링크" twice reuses the same URL instead of
@@ -142,17 +150,31 @@ export async function finalizeCommitteeRun(userId: number, id: number, patch: Fi
  * that actually finished with a real answer; a running/errored/stopped run
  * has nothing worth showing on a public page and gets null back instead.
  */
-export async function getOrCreateShareToken(userId: number, id: number): Promise<string | null> {
-  const run = await queryOne<{ status: string; final_consensus_text: string | null; share_token: string | null }>(
-    `SELECT status, final_consensus_text, share_token FROM committee_runs WHERE id = ? AND user_id = ?`,
+export async function getOrCreateShareToken(userId: number, id: number): Promise<ShareTokenResult | null> {
+  const run = await queryOne<{
+    status: string;
+    final_consensus_text: string | null;
+    share_token: string | null;
+    share_summary: string | null;
+    providers_json: string;
+  }>(
+    `SELECT status, final_consensus_text, share_token, share_summary, providers_json FROM committee_runs WHERE id = ? AND user_id = ?`,
     [id, userId],
   );
   if (!run || run.status !== "success" || !run.final_consensus_text) return null;
-  if (run.share_token) return run.share_token;
+
+  const providers = JSON.parse(run.providers_json) as ProviderId[];
+  if (run.share_token) {
+    return { shareToken: run.share_token, needsSummary: !run.share_summary, providers, finalConsensusText: run.final_consensus_text };
+  }
 
   const token = crypto.randomUUID().replace(/-/g, "");
   await execute(`UPDATE committee_runs SET share_token = ? WHERE id = ? AND user_id = ?`, [token, id, userId]);
-  return token;
+  return { shareToken: token, needsSummary: true, providers, finalConsensusText: run.final_consensus_text };
+}
+
+export async function setShareSummary(userId: number, id: number, summary: string): Promise<void> {
+  await execute(`UPDATE committee_runs SET share_summary = ? WHERE id = ? AND user_id = ?`, [summary, id, userId]);
 }
 
 export interface PublicCommitteeRun {
@@ -160,38 +182,45 @@ export interface PublicCommitteeRun {
   providers: ProviderId[];
   finalConsensusText: string;
   finalQualityScore: number | null;
+  /** Null for a share link minted before this existed, or if the one-time generation call failed -- the page falls back to showing only the full report. */
+  summary: string | null;
   completedAt: string | null;
 }
 
 /**
  * No userId scoping -- this is the one committee query meant to be called
  * from an unauthenticated request (the public /share/committee/[token]
- * page). Selects only the fields safe to show a stranger: never the raw
- * mission's context free-text fields, cost/token totals, or which user owns
- * it. The `status = 'success'` check is defense in depth -- tokens are only
- * ever minted for successful runs above, but a row could in principle be
- * re-run/mutated later, so this re-verifies rather than trusting the token's
- * mere existence.
+ * page). Selects only the fields safe to show a stranger: never the
+ * optimized/internal mission text, context free-text fields, cost/token
+ * totals, or which user owns it. The `status = 'success'` check is defense
+ * in depth -- tokens are only ever minted for successful runs above, but a
+ * row could in principle be re-run/mutated later, so this re-verifies
+ * rather than trusting the token's mere existence.
  */
 export async function getPublicCommitteeRunByShareToken(token: string): Promise<PublicCommitteeRun | null> {
   const row = await queryOne<{
     mission: string;
-    optimized_mission: string | null;
     providers_json: string;
     final_consensus_text: string | null;
     final_quality_score: number | null;
+    share_summary: string | null;
     completed_at: string | null;
   }>(
-    `SELECT mission, optimized_mission, providers_json, final_consensus_text, final_quality_score, completed_at
+    `SELECT mission, providers_json, final_consensus_text, final_quality_score, share_summary, completed_at
      FROM committee_runs WHERE share_token = ? AND status = 'success'`,
     [token],
   );
   if (!row || !row.final_consensus_text) return null;
   return {
-    mission: row.optimized_mission ?? row.mission,
+    // The raw, user-typed mission -- short by construction. The
+    // prompt_optimize stage can turn a one-line ask into a multi-paragraph
+    // brief for the AI providers' benefit, which reads as a wall of text on
+    // a page meant to be skimmed in seconds.
+    mission: row.mission,
     providers: JSON.parse(row.providers_json) as ProviderId[],
     finalConsensusText: row.final_consensus_text,
     finalQualityScore: row.final_quality_score,
+    summary: row.share_summary,
     completedAt: row.completed_at,
   };
 }
