@@ -39,10 +39,14 @@ export async function POST(request: NextRequest) {
     .map((r) => `### ${PROVIDER_LABELS[r.provider]} (${r.model})\n${r.text}`)
     .join("\n\n");
 
+  // WINNER_MODEL goes first, not last -- same fix as lib/committee/prompts.ts's
+  // JUDGE_SYSTEM_PROMPT: a marker requested at the end of an open-ended
+  // response is one verbose model away from being truncated before it's ever
+  // written, silently losing Cost Killer's winner data for that comparison.
   const systemPrompt =
     body.mode === "consensus"
       ? "You are comparing responses from multiple AI models to the same prompt. Synthesize the points of agreement into a single answer, and explicitly call out any real disagreement between the models rather than papering over it."
-      : "You are comparing responses from multiple AI models to the same prompt. Pick the single best response and justify the choice in 2-3 sentences. If none is clearly best, pick the one you'd keep anyway. Then, on its own final line with nothing else on it, output exactly `WINNER_MODEL: <model id>`, copying one of the model ids given above verbatim.";
+      : "You are comparing responses from multiple AI models to the same prompt. On the very first line, with nothing else on it, output exactly `WINNER_MODEL: <model id>` -- copying one of the model ids given above verbatim, picking the one you'd keep even if none is clearly best. Then, after that line, justify the choice in 2-3 sentences.";
 
   const startedAt = new Date().toISOString();
   const controller = new AbortController();
@@ -50,7 +54,7 @@ export async function POST(request: NextRequest) {
   const judgeResult = await runJudgeWithFailover(
     auth.id,
     candidates,
-    { systemPrompt, userPrompt: labeled, maxTokens: 2048 },
+    { systemPrompt, userPrompt: labeled, maxTokens: 4096 },
     controller.signal,
   );
   const judgeProvider = judgeResult.provider;

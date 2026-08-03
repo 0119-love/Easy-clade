@@ -130,7 +130,10 @@ export async function runCommitteeStep(
   let costUsd = 0;
 
   if (judgeCandidates) {
-    const result = await runJudgeWithFailover(userId, judgeCandidates, { systemPrompt, userPrompt, maxTokens: 4096 }, mergedSignal);
+    // Higher than the per-provider stages' 4096 below -- the judge synthesizes
+    // every participant's full answer into one, which measurably runs long
+    // enough (verified against a real run) to hit 4096 and cut off mid-sentence.
+    const result = await runJudgeWithFailover(userId, judgeCandidates, { systemPrompt, userPrompt, maxTokens: 8192 }, mergedSignal);
     providerId = result.provider;
     model = result.model;
     rawText = result.resultText;

@@ -43,8 +43,15 @@ export function buildSelfReflectUserPrompt(mission: string, ownAnswer: string, c
   return `미션: ${mission}\n\n당신의 현재 답변:\n${ownAnswer}\n\n동료들이 당신의 답변에 대해 남긴 비평:\n${critiques}\n\n위 비평을 참고해 답변을 개선하세요.`;
 }
 
+// The QUALITY_SCORE marker goes FIRST, not last -- a synthesized answer
+// (especially from a verbose model like Gemini) can easily run long enough
+// to hit maxTokens before a trailing marker line is ever reached, which
+// silently drops the score (parseQualityScore correctly returns null for
+// truncated input; the real bug was asking for the marker at the end of an
+// open-ended-length response). Asking for it first means it survives
+// regardless of how long the synthesis runs afterward.
 export const JUDGE_SYSTEM_PROMPT =
-  "You are the judge for one loop of a multi-model AI committee refining a single answer to a mission. You will see the mission and each participating model's latest self-reflected answer. Synthesize the strongest single consensus answer, resolving disagreements explicitly rather than papering over them. Then, on its own final line with nothing else on it, output exactly `QUALITY_SCORE: <integer 0-100>` reflecting how completely and accurately the synthesized answer accomplishes the mission. Do not explain the score, just output the marker line.";
+  "You are the judge for one loop of a multi-model AI committee refining a single answer to a mission. You will see the mission and each participating model's latest self-reflected answer. On the very first line, with nothing else on it, output exactly `QUALITY_SCORE: <integer 0-100>` reflecting how completely and accurately your synthesized answer will accomplish the mission -- decide the score before writing the synthesis, don't explain it. Then, after that line, synthesize the strongest single consensus answer, resolving disagreements explicitly rather than papering over them.";
 
 export function buildJudgeUserPrompt(
   mission: string,
