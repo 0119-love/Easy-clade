@@ -34,8 +34,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         { systemPrompt: SUMMARY_SYSTEM_PROMPT, userPrompt: result.finalConsensusText, maxTokens: 300 },
         controller.signal,
       );
-      if (summaryResult.status === "success" && summaryResult.resultText.trim()) {
-        await setShareSummary(auth.id, committeeRunId, summaryResult.resultText.trim());
+      const summaryText = summaryResult.resultText.trim();
+      // Sanity check, not just "did the call succeed" -- a real run
+      // produced a clean "success" status carrying only a couple of stray
+      // words (an occasional short vendor response, not a stream error this
+      // codebase surfaces as one). Requiring at least 2 bullet lines and a
+      // minimum length rejects that silently instead of persisting a
+      // one-word "summary" that reads as broken on the public page.
+      const bulletCount = (summaryText.match(/^[-*]\s+/gm) ?? []).length;
+      if (summaryResult.status === "success" && bulletCount >= 2 && summaryText.length >= 40) {
+        await setShareSummary(auth.id, committeeRunId, summaryText);
       }
     } catch {
       // Swallow -- see comment above.
