@@ -1,11 +1,5 @@
-"use client";
-
-import { useState } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { toast } from "sonner";
-import { Link2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StarRating } from "@/components/ui/star-rating";
 import { CodeBlock } from "@/components/dashboard/CodeBlock";
@@ -36,57 +30,20 @@ const markdownComponents: Components = {
 
 interface FinalResultCardProps {
   status: CommitteeRunUiStatus;
-  committeeRunId: number | null;
   finalConsensusText: string | null;
   finalQualityScore: number | null;
   bestLoopNumber: number | null;
   errorMessage: string | null;
 }
 
-export function FinalResultCard({
-  status,
-  committeeRunId,
-  finalConsensusText,
-  finalQualityScore,
-  bestLoopNumber,
-  errorMessage,
-}: FinalResultCardProps) {
-  const [sharing, setSharing] = useState(false);
-
+export function FinalResultCard({ status, finalConsensusText, finalQualityScore, bestLoopNumber, errorMessage }: FinalResultCardProps) {
   if (status === "idle" || status === "running") return null;
-
-  async function handleShare() {
-    if (!committeeRunId || sharing) return;
-    setSharing(true);
-    try {
-      const res = await fetch(`/api/committee/${committeeRunId}/share`, { method: "POST" });
-      const data = (await res.json()) as { shareToken?: string; error?: string };
-      if (!res.ok || !data.shareToken) {
-        toast.error(data.error ?? "공유 링크를 만들지 못했습니다.");
-        return;
-      }
-      const url = `${window.location.origin}/share/committee/${data.shareToken}`;
-      await navigator.clipboard.writeText(url);
-      toast.success("공유 링크를 클립보드에 복사했습니다.");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "알 수 없는 오류로 공유 링크를 만들지 못했습니다.");
-    } finally {
-      setSharing(false);
-    }
-  }
 
   return (
     <Card className="space-y-4 p-6">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-foreground">최종 결과</h2>
-        <div className="flex items-center gap-3">
-          {bestLoopNumber !== null && <span className="text-xs text-text-secondary">Loop {bestLoopNumber} 기준</span>}
-          {finalConsensusText && (
-            <Button type="button" size="sm" variant="outline" onClick={handleShare} disabled={sharing}>
-              <Link2 className="size-3.5" /> {sharing ? "만드는 중..." : "공유 링크"}
-            </Button>
-          )}
-        </div>
+        {bestLoopNumber !== null && <span className="text-xs text-text-secondary">Loop {bestLoopNumber} 기준</span>}
       </div>
 
       {!finalConsensusText ? (

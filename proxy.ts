@@ -18,12 +18,6 @@ export function proxy(request: NextRequest) {
   // Standalone showcase pages with no account data behind them -- meant to be
   // shared as a plain link, so they skip the login gate entirely.
   const isDemoPage = pathname === "/demo" || pathname.startsWith("/demo/");
-  // Same reasoning as isDemoPage -- a completed Committee run's public,
-  // shareable result page (see app/share/committee/[token]/page.tsx). It has
-  // no account data attached (the underlying query is deliberately
-  // unscoped/allowlisted), so it's meant to work as a plain link handed to
-  // someone with no account yet.
-  const isCommitteeSharePage = pathname.startsWith("/share/committee/");
   // "/" is public (reachable with no session) same as the auth pages, but
   // deliberately NOT in the "bounce away if a session cookie exists" branch
   // below like they are. This check is a presence check, not a validity
@@ -35,7 +29,7 @@ export function proxy(request: NextRequest) {
   // genuinely logged-in visitor seeing the pitch once more on "/" is a much
   // smaller cost than the landing page silently not working for anyone with
   // cookie debris.
-  const isPublicPage = isLandingPage || isAuthPage || isDemoPage || isCommitteeSharePage;
+  const isPublicPage = isLandingPage || isAuthPage || isDemoPage;
   const hasSession = request.cookies.has(SESSION_COOKIE);
 
   if (!isPublicPage && !hasSession) {

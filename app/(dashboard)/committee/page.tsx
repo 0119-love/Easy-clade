@@ -21,7 +21,6 @@ const PER_PROVIDER_STAGES: Array<"cross_review" | "self_reflect"> = ["cross_revi
 export default function CommitteePage() {
   const status = useSystemStatus();
   const runStatus = useCommitteeStore((s) => s.runStatus);
-  const committeeRunId = useCommitteeStore((s) => s.committeeRunId);
   const currentLoop = useCommitteeStore((s) => s.currentLoop);
   const maxLoops = useCommitteeStore((s) => s.maxLoops);
   const selectedProviders = useCommitteeStore((s) => s.selectedProviders);
@@ -102,7 +101,6 @@ export default function CommitteePage() {
           <LiveLoopTimeline loops={loops} currentLoop={currentLoop} maxLoops={maxLoops} allProviders={selectedProviders} />
           <FinalResultCard
             status={runStatus}
-            committeeRunId={committeeRunId}
             finalConsensusText={finalConsensusText}
             finalQualityScore={finalQualityScore}
             bestLoopNumber={bestLoopNumber}
