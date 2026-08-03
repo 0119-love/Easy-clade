@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getProvider } from "@/lib/providers/registry";
 import { insertJudgeRun } from "@/lib/history/queries";
+import { runJudgeWithFailover } from "@/lib/providers/judgeWithFailover";
 import { fireWebhooks } from "@/lib/integrations/fireWebhooks";
 import { PROVIDER_LABELS, type ProviderId } from "@/lib/config/types";
 import { requireUserContext } from "@/lib/auth/session";
@@ -25,9 +25,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "채점할 응답이 없습니다." }, { status: 400 });
   }
 
-  // Defaults to Claude; callers (Settings-configured judge preference) can override.
-  const judgeProvider: ProviderId = body.judgeProvider ?? "anthropic";
-  const judgeModel = body.judgeModel ?? "claude-sonnet-5";
+  // Central judge failover, not a single hardcoded/preferred vendor: try
+  // every candidate provider that just answered this prompt, in order,
+  // until one succeeds as judge. A caller-supplied judgeProvider (if any)
+  // goes first as a preference, but it's no longer a single point of
+  // failure -- if it's out of credits/quota, the next candidate takes over
+  // instead of failing the whole comparison.
+  const candidates = body.judgeProvider
+    ? [{ provider: body.judgeProvider, model: body.judgeModel ?? body.responses[0].model }, ...body.responses]
+    : body.responses;
 
   const labeled = body.responses
     .map((r) => `### ${PROVIDER_LABELS[r.provider]} (${r.model})\n${r.text}`)
@@ -39,32 +45,21 @@ export async function POST(request: NextRequest) {
       : "You are comparing responses from multiple AI models to the same prompt. Pick the single best response and justify the choice in 2-3 sentences. If none is clearly best, pick the one you'd keep anyway. Then, on its own final line with nothing else on it, output exactly `WINNER_MODEL: <model id>`, copying one of the model ids given above verbatim.";
 
   const startedAt = new Date().toISOString();
-  const provider = getProvider(judgeProvider);
   const controller = new AbortController();
 
-  let resultText = "";
-  let errorMessage: string | null = null;
-  let inputTokens = 0;
-  let outputTokens = 0;
-  let costUsd = 0;
-
-  try {
-    for await (const chunk of provider.streamComplete(
-      auth.id,
-      { model: judgeModel, systemPrompt, userPrompt: labeled, maxTokens: 2048 },
-      controller.signal,
-    )) {
-      if (chunk.type === "text-delta") resultText += chunk.text;
-      if (chunk.type === "done") {
-        inputTokens = chunk.inputTokens;
-        outputTokens = chunk.outputTokens;
-        costUsd = chunk.costUsd;
-      }
-      if (chunk.type === "error") errorMessage = chunk.message;
-    }
-  } catch (err) {
-    errorMessage = err instanceof Error ? err.message : "알 수 없는 오류";
-  }
+  const judgeResult = await runJudgeWithFailover(
+    auth.id,
+    candidates,
+    { systemPrompt, userPrompt: labeled, maxTokens: 2048 },
+    controller.signal,
+  );
+  const judgeProvider = judgeResult.provider;
+  const judgeModel = judgeResult.model;
+  let resultText = judgeResult.resultText;
+  const errorMessage = judgeResult.errorMessage;
+  const inputTokens = judgeResult.inputTokens;
+  const outputTokens = judgeResult.outputTokens;
+  const costUsd = judgeResult.costUsd;
 
   // Cost Killer's data source: pull the judge's `WINNER_MODEL: <id>` line
   // back out and match it to one of the actual candidates, then strip it so

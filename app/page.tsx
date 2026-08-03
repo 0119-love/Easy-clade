@@ -1,11 +1,20 @@
 import Link from "next/link";
-import { ArrowRight, Columns3, Gauge, Zap } from "lucide-react";
+import { ArrowRight, Columns3, Gauge, Gavel } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ProviderOrbit } from "@/components/landing/ProviderOrbit";
-import { PROVIDER_LABELS } from "@/lib/config/types";
 
+// Committee leads -- it's the feature no side-by-side chat aggregator
+// (Poe, OpenRouter, LibreChat...) actually has: models don't just answer
+// once, they review and correct each other until a quality bar is hit.
+// Comparison and cost tracking are real but no longer the headline --
+// every other multi-model tool already says those same two things.
 const FEATURES = [
+  {
+    icon: Gavel,
+    title: "AI들이 서로 검증합니다",
+    description: "초안 → 교차 비평 → 자기 성찰 → 합의. 목표 품질 점수에 도달할 때까지 반복해서, 확신이 필요한 답을 만듭니다.",
+  },
   {
     icon: Columns3,
     title: "한 화면에서 비교",
@@ -15,11 +24,6 @@ const FEATURES = [
     icon: Gauge,
     title: "비용 절감 인사이트",
     description: "실제 비교 기록을 근거로, 어떤 모델이 저렴하면서도 자주 이겼는지 보여줍니다.",
-  },
-  {
-    icon: Zap,
-    title: "자동화 & 에이전트",
-    description: "반복 작업을 자동화하고, 코딩·번역·검색 등 프롬프트 성격에 맞게 자동으로 라우팅합니다.",
   },
 ];
 
@@ -32,8 +36,9 @@ export default function LandingPage() {
             AI Command Center
           </h1>
           <p className="mt-4 text-balance text-[15px] leading-relaxed text-text-secondary">
-            {Object.values(PROVIDER_LABELS).join(", ")}를 한 곳에서 연결해 비교하고, 비용을 추적하고, 반복 작업을
-            자동화하는 멀티 프로바이더 커맨드 센터입니다.
+            Claude, GPT, Gemini, Grok, Perplexity, DeepSeek이 서로의 초안을 비평하고 스스로 고쳐가며 합의에 이를
+            때까지 반복합니다 — 확신이 필요한 답을 위한 AI 위원회. 프로바이더 2개만 연결해도 바로 체험할 수
+            있습니다.
           </p>
 
           <div className="mt-8 flex items-center gap-3">

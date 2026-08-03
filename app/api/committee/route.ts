@@ -35,7 +35,13 @@ export async function POST(request: NextRequest) {
   const targetQualityScore = Math.min(100, Math.max(1, Math.round(body.targetQualityScore) || 100));
 
   const context: CommitteeContext = { ...emptyCommitteeContext(), ...body.context };
-  const judgeProvider: ProviderId = providers.includes("anthropic") ? "anthropic" : providers[0];
+  // No hardcoded vendor preference -- this is just the *first* candidate
+  // runCommitteeStep's judgeWithFailover tries (see buildJudgeCandidates in
+  // lib/committee/orchestrator.ts). Every other selected provider is already
+  // a fallback if this one is out of credits/quota, so picking Anthropic
+  // specifically bought nothing but a near-guaranteed first failure on an
+  // account with no Anthropic credit.
+  const judgeProvider: ProviderId = providers[0];
   const judgeModel = DEFAULT_MODEL_BY_PROVIDER[judgeProvider];
 
   const { estimatedMaxCostUsd, estimatedMaxSeconds } = estimateCommitteeRun({

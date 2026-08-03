@@ -36,7 +36,13 @@ export function MissionComposer({ keysStatus }: MissionComposerProps) {
   const setMaxLoops = useCommitteeStore((s) => s.setMaxLoops);
 
   const running = runStatus === "running";
-  const judgeProvider: ProviderId = selectedProviders.includes("anthropic") ? "anthropic" : (selectedProviders[0] ?? "anthropic");
+  // Same fix as app/api/consensus/route.ts's judge default: prefer a
+  // selected provider that isn't already known to be failing (out of
+  // credits/quota, etc.) over hardcoding Anthropic regardless of its actual
+  // key status -- a judge call to a provider that just errored on its last
+  // real call is a near-guaranteed second failure.
+  const judgeProvider: ProviderId =
+    selectedProviders.find((p) => keysStatus?.providers[p]?.lastCallStatus !== "error") ?? selectedProviders[0] ?? "anthropic";
 
   const estimate = useMemo(
     () => estimateCommitteeRun({ mission, context, providers: selectedProviders, maxLoops, judgeProvider }),

@@ -215,6 +215,11 @@ const SCHEMA_STATEMENTS = [
     completed_at TEXT
   )`,
   `CREATE INDEX IF NOT EXISTS idx_committee_runs_user ON committee_runs(user_id)`,
+  // Set once, on demand, by getOrCreateShareToken -- only for runs that
+  // finished with a real consensus answer, so its mere presence marks a run
+  // as "safe to render on the public, no-login /share/committee page."
+  `ALTER TABLE committee_runs ADD COLUMN IF NOT EXISTS share_token TEXT`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS idx_committee_runs_share_token ON committee_runs(share_token) WHERE share_token IS NOT NULL`,
   `CREATE TABLE IF NOT EXISTS committee_loops (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id),
