@@ -3,6 +3,7 @@ import type { ProviderTrend } from "@/app/api/analytics/route";
 import type { DashboardActivityItem, DashboardProviderStat, DashboardTotals } from "@/app/api/analytics/dashboard/route";
 import type { DashboardTrendPoint } from "@/app/api/analytics/dashboard/trend/route";
 import type { HeatmapResponse } from "@/app/api/analytics/heatmap/route";
+import type { FounderFunnelStats } from "@/app/api/analytics/funnel/route";
 import type { WeeklyInsight } from "@/lib/history/queries";
 
 export interface AnalyticsResponse {
@@ -61,5 +62,12 @@ export async function fetchActivityHeatmap(): Promise<HeatmapResponse> {
 export async function fetchWeeklyInsight(): Promise<WeeklyInsight> {
   const res = await fetch("/api/analytics/insight");
   if (!res.ok) throw new Error("주간 인사이트를 불러오지 못했습니다.");
+  return res.json();
+}
+
+/** Returns null (not a thrown error) on a non-owner 403 -- most signed-in users are expected to get one, and that's not a failure worth a console error or a toast. */
+export async function fetchFounderFunnel(): Promise<FounderFunnelStats | null> {
+  const res = await fetch("/api/analytics/funnel");
+  if (!res.ok) return null;
   return res.json();
 }

@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { DashboardProviderCard } from "@/components/dashboard/DashboardProviderCard";
 import { SystemStatusCard } from "@/components/dashboard/SystemStatusCard";
+import { FounderFunnelCard } from "@/components/dashboard/FounderFunnelCard";
 import { TokenTrendChart } from "@/components/dashboard/TokenTrendChart";
 import { CostBreakdownChart } from "@/components/dashboard/CostBreakdownChart";
 import { ActivityHeatmap } from "@/components/dashboard/ActivityHeatmap";
@@ -86,6 +87,8 @@ export default function DashboardPage() {
         lastUpdatedAt={todayUpdatedAt}
         isLoading={todayPending}
       />
+
+      <FounderFunnelCard />
 
       <Card className="p-6">
         <h2 className="mb-4 text-sm font-semibold text-foreground">토큰 사용량 추이</h2>

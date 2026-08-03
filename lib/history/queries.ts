@@ -24,6 +24,8 @@ export interface NewRunRow {
   projectId: number | null;
   /** Nullable -- older rows predate this column, and not every caller of insertRun passes an effort. */
   effort: EffortLevel | null;
+  /** Brain orchestration only (see getBrainHistory) -- every other caller omits this and it stores null. */
+  candidatesJson?: string | null;
 }
 
 export interface RunRow extends NewRunRow {
@@ -50,8 +52,8 @@ export interface NewJudgeRunRow {
 export async function insertRun(userId: number, row: NewRunRow): Promise<number> {
   const inserted = await queryOne<{ id: number }>(
     `INSERT INTO runs
-       (user_id, run_group_id, provider, model, system_prompt, user_prompt, temperature, status, response_text, error_message, input_tokens, output_tokens, cost_usd, latency_ms, duration_ms, started_at, completed_at, project_id, effort)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       (user_id, run_group_id, provider, model, system_prompt, user_prompt, temperature, status, response_text, error_message, input_tokens, output_tokens, cost_usd, latency_ms, duration_ms, started_at, completed_at, project_id, effort, candidates_json)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      RETURNING id`,
     [
       userId,
@@ -73,9 +75,65 @@ export async function insertRun(userId: number, row: NewRunRow): Promise<number>
       row.completedAt,
       row.projectId,
       row.effort,
+      row.candidatesJson ?? null,
     ],
   );
   return inserted!.id;
+}
+
+export interface BrainHistoryEntry {
+  id: number;
+  runGroupId: string;
+  mode: "cost_saver" | "best_quality";
+  /** Only meaningful for cost_saver (best_quality's stored provider is just activeProviders[0], not authoritative -- candidatesJson has the real per-provider breakdown). */
+  provider: ProviderId;
+  model: string;
+  userPrompt: string;
+  responseText: string | null;
+  candidatesJson: string | null;
+  inputTokens: number;
+  outputTokens: number;
+  costUsd: number;
+  durationMs: number | null;
+  startedAt: string;
+}
+
+/** Brain's own run history -- run_group_id's "brain-" prefix (set in app/api/brain/orchestrate/route.ts) is what marks a row as Brain's, not a separate table; every other feature's runs are excluded by that filter. */
+export async function getBrainHistory(userId: number, limit = 50): Promise<BrainHistoryEntry[]> {
+  const rows = await queryAll<{
+    id: number;
+    run_group_id: string;
+    provider: ProviderId;
+    model: string;
+    user_prompt: string;
+    response_text: string | null;
+    candidates_json: string | null;
+    input_tokens: number;
+    output_tokens: number;
+    cost_usd: number;
+    duration_ms: number | null;
+    started_at: string;
+  }>(
+    `SELECT id, run_group_id, provider, model, user_prompt, response_text, candidates_json, input_tokens, output_tokens, cost_usd, duration_ms, started_at
+     FROM runs WHERE user_id = ? AND run_group_id LIKE 'brain-%'
+     ORDER BY started_at DESC LIMIT ?`,
+    [userId, limit],
+  );
+  return rows.map((r) => ({
+    id: r.id,
+    runGroupId: r.run_group_id,
+    mode: r.model === "selected-ai-synthesis" ? "best_quality" : "cost_saver",
+    provider: r.provider,
+    model: r.model,
+    userPrompt: r.user_prompt,
+    responseText: r.response_text,
+    candidatesJson: r.candidates_json,
+    inputTokens: r.input_tokens,
+    outputTokens: r.output_tokens,
+    costUsd: Number(r.cost_usd),
+    durationMs: r.duration_ms,
+    startedAt: r.started_at,
+  }));
 }
 
 export async function insertJudgeRun(userId: number, row: NewJudgeRunRow): Promise<void> {

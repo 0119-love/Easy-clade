@@ -24,7 +24,9 @@ import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ProviderMark } from "@/components/ui/provider-mark";
+import { BrainHistorySidebar } from "@/components/dashboard/BrainHistorySidebar";
 import { PROVIDER_LABELS, type ProviderId } from "@/lib/config/types";
+import type { BrainHistoryEntry } from "@/lib/brain/client";
 
 type ModeType = "cost_saver" | "best_quality" | "auto";
 
@@ -76,6 +78,8 @@ export function BrainOrchestratorView() {
   const [result, setResult] = useState<OrchestrationResult | null>(null);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("final");
+  const [historySelectedId, setHistorySelectedId] = useState<number | null>(null);
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
 
   // Selected providers state
   const [selectedProviders, setSelectedProviders] = useState<ProviderId[]>([]);
@@ -154,6 +158,11 @@ export function BrainOrchestratorView() {
       const data: OrchestrationResult = await res.json();
       setResult(data);
       setActiveTab("final");
+      setHistorySelectedId(null);
+      // The route just persisted this run (see app/api/brain/orchestrate/route.ts) --
+      // bumping the query key re-fetches the sidebar so the new entry shows up now, not
+      // after a manual reload.
+      setHistoryRefreshKey((k) => k + 1);
       toast.success(`${selectedProviders.length}개 AI 조합 오케스트레이션 완료!`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "실행 중 오류가 발생했습니다.");
@@ -161,6 +170,49 @@ export function BrainOrchestratorView() {
       setLoading(false);
     }
   };
+
+  function handleSelectHistory(entry: BrainHistoryEntry) {
+    const candidates: Candidate[] = entry.candidatesJson
+      ? (JSON.parse(entry.candidatesJson) as Candidate[])
+      : [
+          {
+            provider: entry.provider,
+            model: entry.model,
+            providerLabel: PROVIDER_LABELS[entry.provider],
+            text: entry.responseText ?? "",
+            inputTokens: entry.inputTokens,
+            outputTokens: entry.outputTokens,
+            costUsd: entry.costUsd,
+            latencyMs: entry.durationMs ?? 0,
+          },
+        ];
+
+    setPrompt(entry.userPrompt);
+    setMode(entry.mode);
+    setResult({
+      mode: entry.mode,
+      finalResponse: entry.responseText ?? "",
+      candidates,
+      metrics: {
+        totalInputTokens: entry.inputTokens,
+        totalOutputTokens: entry.outputTokens,
+        totalCostUsd: entry.costUsd,
+        savedCostUsd: 0,
+        savedPercentage: 0,
+        executionTimeMs: entry.durationMs ?? 0,
+        primaryProvider: candidates.map((c) => c.providerLabel).join(" + "),
+      },
+    });
+    setActiveTab("final");
+    setHistorySelectedId(entry.id);
+  }
+
+  function handleNewPrompt() {
+    setPrompt("");
+    setResult(null);
+    setHistorySelectedId(null);
+    setActiveTab("final");
+  }
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -170,7 +222,15 @@ export function BrainOrchestratorView() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex gap-6">
+      <BrainHistorySidebar
+        selectedId={historySelectedId}
+        onSelect={handleSelectHistory}
+        onNew={handleNewPrompt}
+        refreshKey={historyRefreshKey}
+      />
+
+      <div className="min-w-0 flex-1 space-y-6">
       {/* 6 AI Provider Selector Grid (Key Configured Check) */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
@@ -543,6 +603,7 @@ export function BrainOrchestratorView() {
           4. <strong>4단계 - 결과 교차 검증 & 합성 (Consensus & Synthesis):</strong> 돌아온 각 AI의 답변을 교차 비교하여 중복을 제거하고, 오류 없는 최선의 합성 답변 및 토큰/비용 절감 리포트를 완성합니다.
         </p>
       </footer>
+      </div>
     </div>
   );
 }

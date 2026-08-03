@@ -54,6 +54,12 @@ const SCHEMA_STATEMENTS = [
   `CREATE INDEX IF NOT EXISTS idx_runs_provider ON runs(provider)`,
   `CREATE INDEX IF NOT EXISTS idx_runs_group ON runs(run_group_id)`,
   `CREATE INDEX IF NOT EXISTS idx_runs_user ON runs(user_id)`,
+  // Only Brain orchestration writes this -- the per-candidate raw answers
+  // (Brain's "best_quality" mode fans out to several providers, but only
+  // ever persisted the joined synthesized text). Without it, reopening a
+  // past Brain run from its new history sidebar could only show the merged
+  // text, not the same per-model tabs the live result view has.
+  `ALTER TABLE runs ADD COLUMN IF NOT EXISTS candidates_json TEXT`,
   `CREATE TABLE IF NOT EXISTS judge_runs (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id),

@@ -121,6 +121,17 @@ export async function POST(request: NextRequest) {
     const completedAt = new Date().toISOString();
     const durationMs = new Date(completedAt).getTime() - new Date(startedAt).getTime();
 
+    const candidate = {
+      provider: providerId,
+      model,
+      providerLabel: PROVIDER_LABELS[providerId],
+      text: responseText,
+      inputTokens,
+      outputTokens,
+      costUsd,
+      latencyMs: durationMs,
+    };
+
     await insertRun(userId, {
       runGroupId,
       provider: providerId,
@@ -140,6 +151,7 @@ export async function POST(request: NextRequest) {
       completedAt,
       projectId: null,
       effort: "low",
+      candidatesJson: JSON.stringify([candidate]),
     });
 
     const standardEstimatedCost = costUsd * 14;
@@ -147,18 +159,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       mode: "cost_saver",
       finalResponse: responseText,
-      candidates: [
-        {
-          provider: providerId,
-          model,
-          providerLabel: PROVIDER_LABELS[providerId],
-          text: responseText,
-          inputTokens,
-          outputTokens,
-          costUsd,
-          latencyMs: durationMs,
-        },
-      ],
+      candidates: [candidate],
       metrics: {
         totalInputTokens: inputTokens,
         totalOutputTokens: outputTokens,
@@ -261,6 +262,7 @@ export async function POST(request: NextRequest) {
       completedAt,
       projectId: null,
       effort: "high",
+      candidatesJson: JSON.stringify(results),
     });
 
     return NextResponse.json({
